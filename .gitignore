@@ -24,6 +24,7 @@ __pycache__
 .ipynb_checkpoints
 .tox
 .DS_Store
+*.pkl
 .vscode
 \#*#
 .#*
