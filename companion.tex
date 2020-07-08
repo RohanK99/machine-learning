@@ -1,0 +1,178 @@
+\documentclass[12pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin = 1in]{geometry}
+\usepackage[english]{babel}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{changepage}
+\usepackage[makeindex]{imakeidx}
+\usepackage{textcomp}
+\usepackage{gensymb}
+\usepackage{xcolor, soul}
+\usepackage{hyperref}
+
+\definecolor{linkColour}{RGB}{140, 25, 57}
+\definecolor{urlColour}{RGB}{137, 62, 27}
+
+\hypersetup{
+    colorlinks,
+    citecolor=purple,
+    filecolor=purple,
+    linkcolor=linkColour,
+    urlcolor=urlColour
+}
+
+\makeindex
+
+\newcommand{\homl}{\hyperlink{homl}{Hands-On Machine Learning}}
+
+\newenvironment{fact*}[2][]
+    {
+    \begin{adjustwidth}{1em}{0em}
+    \noindent
+    \textbf{#2} \hfill #1
+    
+    \vspace{0.1in}
+    \noindent
+    \ignorespaces
+    }
+    {
+    \end{adjustwidth}
+    }
+
+\newenvironment{fact}[2][]
+    {
+    \index{#2}
+    \hypertarget{#2}{\vspace{0.2in}}
+    \begin{adjustwidth}{1em}{0em}
+    \noindent
+    \textbf{#2} \hfill #1
+    
+    \vspace{0.1in}
+    \noindent
+    \ignorespaces
+    }
+    {
+    \end{adjustwidth}
+    }
+
+\title{Companion to Machine Learning}
+\author{Rohan Kumar}
+\date{}
+
+
+
+
+
+
+\begin{document}
+
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+
+\section*{Introduction}
+
+\subsection{What is Machine Learning}
+    Machine Learning is the field of study that gives computers the ability to learn from data without being 
+    explicitly programmed. This is good for problems that require a lot of fine-tuning or for which using a 
+    traditional approach yields no good solution. Machine Learning's data dependency allows it to adapt to new data
+    and gain insight for complex problems and large amounts of data.
+
+\subsection{Applications of Machine Learning}
+    Machine Learning can be used for a range of tasks and can be seen used in:
+    \begin{itemize}
+        \item Analyzing images of products on a productino line to automaticall classify them (Convolutional Neural Net)
+        \item Forecasting company revenue based on performance metrics (Regression or Neural Net)
+        \item Automatically classifying news articles (NLP using Recurrent Neural Networks)
+        \item Summarizing long documents automatically (Natural Language Processing)
+        \item Building intelligent bot for a game (Reinforcement Learning)
+    \end{itemize}
+
+\subsection{Types of Machine Learning}
+    \begin{fact}[\homl]{Supervised Learning}
+        In supervised learning, the training set you feed to the algorithm includes the desired solutions, called labels.
+        (e.g determining if an email is spam would be trained a dataset of example emails labelled as spam or not spam.) \\[0.1in] 
+        Some commonly used supervised learning algorithms are:
+        \begin{itemize}
+            \item k-Nearest Neighbors
+            \item Linear Regression
+            \item Logistic Regression
+            \item Support Vector Machines (SVMs)
+            \item Decision Trees and Random Forests
+            \item Neural Networks
+        \end{itemize}
+    \end{fact}
+
+    \begin{fact}[\homl]{Unsupervised Learning}
+        In unsupervised learning, the training data is unlabeled and the system tries to learn without guidance. The system
+        will try and automatically draw inferences and conclusions about the data and group it as such. (e.g. having a lot of
+        data about blog visitors. Using a clustering algorithm we can group and detect similar visitors). \\[0.1in]
+        Some important unsupervised learning algorithms are:
+        \begin{itemize}
+            \item Clustering
+            \begin{itemize}
+                \item K-Means
+                \item DBSCAN
+                \item Hierarchical Cluster Analysis
+            \end{itemize}
+            \item Anomaly detection and novelty detection
+            \begin{itemize}
+                \item One-class SVM
+                \item Isolation Forest
+            \end{itemize}
+            \item Visualization and dimensionality reduction
+            \begin{itemize}
+                \item Principal Component Analysis (PCA)
+                \item Kernel PCA
+                \item Locally Linear Embedding (LLE)
+                \item t-Distributed Stochastic Neighbor Embeedding (t-SNE)
+            \end{itemize}
+            \item Association rule learning
+            \begin{itemize}
+                \item Apriori
+                \item Eclat
+            \end{itemize}
+        \end{itemize}
+    \end{fact}
+
+    \begin{fact}[\homl]{Semisupervised Learning}
+        Labelling can be very time-consuming and costly, often there will be plenty of unlabelled and a few labelled instances.
+        Algorithms that deal with data that is partially labeled is called semisupervised learning. A good example of this is
+        Google Photos. Google clusters and groups your photos based on facial recognition (unsupervised) and then you can label one photo and it
+        will be able to label every picture like that (supervised). Most semisupervised learning algorithms are combinations of unsupervised and 
+        supervised algorithms.  
+    \end{fact}
+
+    \begin{fact}[\homl]{Reinforcement Learning}
+        Reinforcement Learning is a learning algorithm based on a reward system. The learning system, called an agent, can observe the environment,
+        select and perform actions, and get rewards in return (or penalites in the form of negative rewards). It will then learn by itself what the 
+        best strategy, called a policy, to get the most reward over time. A policy defines what action the agent should choose when it is in a given
+        situation.
+    \end{fact}
+
+\newpage
+
+\section*{Sources}
+    Throughout this compendium, each piece of information will be formatted as such.
+    
+    \vspace{0.1in}
+    \begin{fact*}[Source]{Name / Description of fact}
+        Information about fact.
+    \end{fact*}
+    \vspace{0.3in}
+    
+    \noindent The location which currently contains ``Source'' could potentially be filled with a variety of sources. Here is how to find the source based off the shortened form.
+    
+    \begin{itemize}
+        \item \hypertarget{homl}{\textbf{Hands-On Machine Learning}} refers to Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow, 2nd Edition by Aurélien Géron
+    \end{itemize}
+
+\newpage
+
+\printindex
+
+\end{document}
