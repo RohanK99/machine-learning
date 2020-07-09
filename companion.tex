@@ -173,6 +173,68 @@
 
 \newpage
 
+\section{Data Analysis}
+TODO:
+\begin{itemize}
+    \item Data Model
+    \item Overfitting/Underfitting
+    \item Feature Normalization
+\end{itemize}
+
+\section{Linear Regression}
+    \begin{fact}{Formulation}
+        Linear Regression is a supervised machine learning algorithm where the predicted output is continuous and has a constant slope. Our main objective is to generate a line that
+        minimizes the distance from the line to all of data points. This is essentially minimizing the error and maximizing our prediction accuracy.
+    \end{fact}
+    
+    \begin{fact}{Simple Regression}
+        A simple two variable linear regression uses the slope-intercept form, where $m$ and $b$ are the variables our algorithm will try to "learn". $x$ represents our input data
+        and $y$ represents the prediction.
+
+        $$ y = mx + b$$
+    \end{fact}
+
+    \begin{fact}{Multivariable Regression}
+        Often times there are more than one feature in the data and we need a more complex multi-variable linear equation as our hypothesis. We can represent our hypothesis with the
+        follow multi-viarable linear equation, where $\boldsymbol{w}$ are the weights and $\boldsymbol{x}$ is the input data.
+
+        \begin{align}
+            h_{\boldsymbol{w}}(\boldsymbol{x}) &= w_0x_0 + w_1x_1 w_2x_2 + ... + w_nx_n \\
+            &= \boldsymbol{w}^T\boldsymbol{x}
+        \end{align}
+    \end{fact}
+
+    \begin{fact}{Cost Function}
+        To predict based on a dataset we first need to learn the weights that minimize the mean squared error (euclidean loss) of our hypothesis. We can define the following to be our cost function to
+        minimize with $m$ being the number of datapoints and $i$ being the $i^{th}$ training example.
+
+        \begin{align}
+            J(\boldsymbol{w}) &= \frac{1}{2m}\sum_{i=1}^{m}(h_{\boldsymbol{w}}(\boldsymbol{x}^i) - \boldsymbol{y}^i)^2 \\
+            &= \frac{1}{2m}(X\boldsymbol{w} - \boldsymbol{y})^T(X\boldsymbol{w} - \boldsymbol{y})
+        \end{align}
+
+    \end{fact}
+
+    \begin{fact}{Gradient Descent Solution}
+        Now to solve for $\boldsymbol{w}$ we can use Gradient Descent and iteratively update $\boldsymbol{w}$ until it converges using the following:
+
+        $$ \boldsymbol{w}_j := \boldsymbol{w}_j - \alpha \frac{1}{m}\sum_{i=1}^{m}(h_{\boldsymbol{w}}(\boldsymbol{x}^i) - \boldsymbol{y}^i) $$
+    \end{fact}
+
+    \begin{fact}{Normal Equation Solution}
+        The closed form solution to the linear system in $\boldsymbol{w}$
+
+        $$ \frac{\partial J{\boldsymbol{w}}}{\partial \boldsymbol{w}_j} = \frac{1}{m}\sum_{i=1}^m(\boldsymbol{w}^T\boldsymbol{x}^{i}-\boldsymbol{y}^{i})\boldsymbol{x}_{j}^i = 0 $$
+
+        \noindent writing this as a linear system in $w$ we get $A\boldsymbol{w} = b$ where
+
+        $$ A = \sum_{n=1}^N(\boldsymbol{x}_n \boldsymbol{x}_n^T) \ \textrm{and} \ b = \sum_{n=1}^N(\boldsymbol{x_n} y_n) $$
+    
+        \noindent so we can solve for $\boldsymbol{w} = \boldsymbol{A}^{-1}\boldsymbol{b}$ and get the following vectorized solution.
+
+        $$ \boldsymbol{w} = (X^TX)^{-1}X^T\boldsymbol{y} $$
+
+    \end{fact}
 \printindex
 
 \end{document}
