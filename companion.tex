@@ -12,6 +12,7 @@
 \usepackage{gensymb}
 \usepackage{xcolor, soul}
 \usepackage{hyperref}
+\usepackage{parskip}
 
 \definecolor{linkColour}{RGB}{140, 25, 57}
 \definecolor{urlColour}{RGB}{137, 62, 27}
@@ -85,7 +86,7 @@
 \subsection{Applications of Machine Learning}
     Machine Learning can be used for a range of tasks and can be seen used in:
     \begin{itemize}
-        \item Analyzing images of products on a productino line to automaticall classify them (Convolutional Neural Net)
+        \item Analyzing images of products on a production line to automatically classify them (Convolutional Neural Net)
         \item Forecasting company revenue based on performance metrics (Regression or Neural Net)
         \item Automatically classifying news articles (NLP using Recurrent Neural Networks)
         \item Summarizing long documents automatically (Natural Language Processing)
@@ -129,7 +130,7 @@
                 \item Principal Component Analysis (PCA)
                 \item Kernel PCA
                 \item Locally Linear Embedding (LLE)
-                \item t-Distributed Stochastic Neighbor Embeedding (t-SNE)
+                \item t-Distributed Stochastic Neighbor Embedding (t-SNE)
             \end{itemize}
             \item Association rule learning
             \begin{itemize}
@@ -141,15 +142,15 @@
 
     \begin{fact}[\homl]{Semisupervised Learning}
         Labelling can be very time-consuming and costly, often there will be plenty of unlabelled and a few labelled instances.
-        Algorithms that deal with data that is partially labeled is called semisupervised learning. A good example of this is
+        Algorithms that deal with data that is partially labeled is called semi-supervised learning. A good example of this is
         Google Photos. Google clusters and groups your photos based on facial recognition (unsupervised) and then you can label one photo and it
-        will be able to label every picture like that (supervised). Most semisupervised learning algorithms are combinations of unsupervised and 
+        will be able to label every picture like that (supervised). Most semi-supervised learning algorithms are combinations of unsupervised and 
         supervised algorithms.  
     \end{fact}
 
     \begin{fact}[\homl]{Reinforcement Learning}
         Reinforcement Learning is a learning algorithm based on a reward system. The learning system, called an agent, can observe the environment,
-        select and perform actions, and get rewards in return (or penalites in the form of negative rewards). It will then learn by itself what the 
+        select and perform actions, and get rewards in return (or penalties in the form of negative rewards). It will then learn by itself what the 
         best strategy, called a policy, to get the most reward over time. A policy defines what action the agent should choose when it is in a given
         situation.
     \end{fact}
@@ -179,9 +180,19 @@ TODO:
     \item Data Model
     \item Overfitting/Underfitting
     \item Feature Normalization
+    \item Types of Loss Functions
 \end{itemize}
 
-\section{Linear Regression}
+\section{Linear Models}
+    TODO:
+    \begin{itemize}
+        \item Gradient Descent
+        \item Normalization
+        \item Logistic Regression
+    \end{itemize}
+
+    \subsection{Linear Regression}
+
     \begin{fact}{Formulation}
         Linear Regression is a supervised machine learning algorithm where the predicted output is continuous and has a constant slope. Our main objective is to generate a line that
         minimizes the distance from the line to all of data points. This is essentially minimizing the error and maximizing our prediction accuracy.
@@ -196,27 +207,31 @@ TODO:
 
     \begin{fact}{Multivariable Regression}
         Often times there are more than one feature in the data and we need a more complex multi-variable linear equation as our hypothesis. We can represent our hypothesis with the
-        follow multi-viarable linear equation, where $\boldsymbol{w}$ are the weights and $\boldsymbol{x}$ is the input data.
+        follow multi-variable linear equation, where $\boldsymbol{w}$ are the weights and $\boldsymbol{x}$ is the input data.
 
-        \begin{align}
+        \begin{align*}
             h_{\boldsymbol{w}}(\boldsymbol{x}) &= w_0x_0 + w_1x_1 w_2x_2 + ... + w_nx_n \\
             &= \boldsymbol{w}^T\boldsymbol{x}
-        \end{align}
+        \end{align*}
     \end{fact}
 
     \begin{fact}{Cost Function}
         To predict based on a dataset we first need to learn the weights that minimize the mean squared error (euclidean loss) of our hypothesis. We can define the following to be our cost function to
-        minimize with $m$ being the number of datapoints and $i$ being the $i^{th}$ training example.
+        minimize with $m$ being the number of data points and $i$ being the $i^{th}$ training example.
 
-        \begin{align}
+        \begin{align*}
             J(\boldsymbol{w}) &= \frac{1}{2m}\sum_{i=1}^{m}(h_{\boldsymbol{w}}(\boldsymbol{x}^i) - \boldsymbol{y}^i)^2 \\
             &= \frac{1}{2m}(X\boldsymbol{w} - \boldsymbol{y})^T(X\boldsymbol{w} - \boldsymbol{y})
-        \end{align}
+        \end{align*}
 
     \end{fact}
 
     \begin{fact}{Gradient Descent Solution}
-        Now to solve for $\boldsymbol{w}$ we can use Gradient Descent and iteratively update $\boldsymbol{w}$ until it converges using the following:
+        Now to solve for $\boldsymbol{w}$ we can use Gradient Descent and iteratively update $\boldsymbol{w}$ until it converges. We get the slope of the cost function to be:
+        
+        $$ \frac{\partial J{\boldsymbol{w}}}{\partial \boldsymbol{w}_j} = \frac{1}{m}\sum_{i=1}^m(\boldsymbol{w}^T\boldsymbol{x}^{i}-\boldsymbol{y}^{i})\boldsymbol{x}_{j}^i $$
+
+        \noindent now applying a step $\alpha$ we can iteratively change $\boldsymbol{w}$ until it reaches the global minima. 
 
         $$ \boldsymbol{w}_j := \boldsymbol{w}_j - \alpha \frac{1}{m}\sum_{i=1}^{m}(h_{\boldsymbol{w}}(\boldsymbol{x}^i) - \boldsymbol{y}^i) $$
     \end{fact}
@@ -235,6 +250,63 @@ TODO:
         $$ \boldsymbol{w} = (X^TX)^{-1}X^T\boldsymbol{y} $$
 
     \end{fact}
+
+    \subsection{Generalized Linear Models}
+        Often times our data won't be linear and it could be of a higher degree polynomial or a completely different distribution altogether. We can turn this non-linear problem into 
+        a linear regression problem by mapping the data to a different vector space using a basis function.
+
+        \noindent To demonstrate, let us consider a N x 1 (feature) dataset. Let $\phi$ denote the polynomial basis function where
+        $\phi_j(\boldsymbol{x}) = x^j$. Then we can express our hypothesis as: 
+        $$ h_{\boldsymbol{w}}(\boldsymbol{x}) = w_0\phi(x) + w_1\phi_1(x) + w_2\phi_2(x) + ... + w_3\phi_3(x) $$
+
+        \noindent A dataset with 3 features with a polynomial basis would have a hypothesis as such
+        $$ h_{\boldsymbol{w}}(\boldsymbol{x}) = w_0 + w_1x_1 + w_2x_2 + w_3x_1^2 + w_4x_2^2 + w_5x_1^2x_2 + w_6x_1x_2^2 + w_7x_1^2x_2^2 + w_8x_1^3 + w_9x_2^3 $$
+
+        \noindent This can then be extrapolated to n-features.
+
+        \noindent Some commonly used basis functions are:
+
+        \begin{itemize}
+            \item Polynomial: $\phi_j(\boldsymbol{x}) = x^j$
+            \item Gaussian: $\phi_j(\boldsymbol{x}) = e^{(\frac{x-\mu_j}{2s^2})}$
+            \item Sigmoid: $\phi_j(\boldsymbol{x}) = \sigma{(\frac{x-\mu_j}{s})}$
+            \item Fourier Basis, Wavelets, etc ...
+        \end{itemize}
+
+    \subsection{Regularization}
+        Small outliers can drastically change our values of $\boldsymbol{w}$ so rely on regularization to reduce overfitting. Polynomial models can be easily regularized
+        by reducing the number of polynomial degrees. For a linear model, regularization is typically achieved by constraining the weights of the model. The regularization term should only
+        be added to the cost function during training. Once the model is trained, the non-regularized cost should be used to measure the model's performance. The bias term $w_0$ is not regularized.
+
+        \begin{fact}{Ridge Regression}
+        Ridge Regression (Tikhonov Regularization) is a regularized version of Linear regression with a regularization term of $\frac{\lambda}{2}\|w\|_2^2$ ($l_2$-norm) added to the cost function.
+        This forces the learning algorithm to fit the data but also keep the model weights as small as possible. The hyperparameter $\lambda$ controls how much you want to regularize the model.
+
+        $$ J(\boldsymbol{w}) = MSE(\boldsymbol{w}) + \frac{\lambda}{2}\|w\|^2_2 $$
+        
+        \end{fact}
+
+        \begin{fact}{Lasso Regression}
+            \textit{Least Absolute Shrinkage and Selection Operator Regression} is another regularized version of Linear Regression, it adds a regularization term to the cost function
+            but uses the $l_1$ norm of the weight vector instead of half the square of the $l_2$ norm.
+
+            $$ J(\boldsymbol{w}) = MSE(\boldsymbol{w}) + \lambda\sum_{i=1}^n|w_i| $$
+
+            An important characteristic of Lasso Regression is that it tends to eliminate the weights of the least important features (i.e, set them to zero). Lasso Regression automatically performs 
+            feature selection and outputs a \textit{sparse model}.
+        \end{fact}
+
+        \begin{fact}{Elastic Net}
+            Elastic Net is a middle ground between Ridge Regression and Lasso Regression. The regularization term is a simple mix of both Ridge and Lasso's regularization terms and you can control the mix
+            ratio $r$. When $r = 0$, Elastic Net is equivalent to Ridge Regression, and when $r = 1$, it is equivalent to Lasso Regression.
+    
+            $$ J(\boldsymbol{w}) = MSE(\boldsymbol{w}) + \frac{(1-r)\lambda}{2}\|w\|^2_2 +  r\lambda\sum_{i=1}^n|w_i| $$
+        \end{fact}
+        
+        \begin{fact}{Early Stopping}
+            Early Stopping is a different way to regularize iterative learning algorithms such as Gradient Descent. This method aims to stop training as soon as the validation error reaches a minimum. For all
+        convex optimization problems there will be a global minima, once that global minima is reached the curve will start going up. This proposes to stop as soong as we reach the minimum.
+        \end{fact}
 \printindex
 
 \end{document}
