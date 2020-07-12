@@ -192,20 +192,16 @@ TODO:
     \end{itemize}
 
     \subsection{Linear Regression}
-
-    \begin{fact}{Formulation}
+    \subsubsection{Formulation}
         Linear Regression is a supervised machine learning algorithm where the predicted output is continuous and has a constant slope. Our main objective is to generate a line that
         minimizes the distance from the line to all of data points. This is essentially minimizing the error and maximizing our prediction accuracy.
-    \end{fact}
     
-    \begin{fact}{Simple Regression}
+    \subsubsection{Simple Regression}
         A simple two variable linear regression uses the slope-intercept form, where $m$ and $b$ are the variables our algorithm will try to "learn". $x$ represents our input data
         and $y$ represents the prediction.
-
         $$ y = mx + b$$
-    \end{fact}
 
-    \begin{fact}{Multivariable Regression}
+    \subsubsection{Multivariable Regression}
         Often times there are more than one feature in the data and we need a more complex multi-variable linear equation as our hypothesis. We can represent our hypothesis with the
         follow multi-variable linear equation, where $\boldsymbol{w}$ are the weights and $\boldsymbol{x}$ is the input data.
 
@@ -213,58 +209,42 @@ TODO:
             h_{\boldsymbol{w}}(\boldsymbol{x}) &= w_0x_0 + w_1x_1 w_2x_2 + ... + w_nx_n \\
             &= \boldsymbol{w}^T\boldsymbol{x}
         \end{align*}
-    \end{fact}
 
-    \begin{fact}{Cost Function}
+    \subsubsection{Cost Function}
         To predict based on a dataset we first need to learn the weights that minimize the mean squared error (euclidean loss) of our hypothesis. We can define the following to be our cost function to
         minimize with $m$ being the number of data points and $i$ being the $i^{th}$ training example.
-
         \begin{align*}
             J(\boldsymbol{w}) &= \frac{1}{2m}\sum_{i=1}^{m}(h_{\boldsymbol{w}}(\boldsymbol{x}^i) - \boldsymbol{y}^i)^2 \\
             &= \frac{1}{2m}(X\boldsymbol{w} - \boldsymbol{y})^T(X\boldsymbol{w} - \boldsymbol{y})
         \end{align*}
 
-    \end{fact}
 
-    \begin{fact}{Gradient Descent Solution}
+    \subsubsection{Gradient Descent Solution}
         Now to solve for $\boldsymbol{w}$ we can use Gradient Descent and iteratively update $\boldsymbol{w}$ until it converges. We get the slope of the cost function to be:
-        
         $$ \frac{\partial J{\boldsymbol{w}}}{\partial \boldsymbol{w}_j} = \frac{1}{m}\sum_{i=1}^m(\boldsymbol{w}^T\boldsymbol{x}^{i}-\boldsymbol{y}^{i})\boldsymbol{x}_{j}^i $$
-
-        \noindent now applying a step $\alpha$ we can iteratively change $\boldsymbol{w}$ until it reaches the global minima. 
-
+        now applying a step $\alpha$ we can iteratively change $\boldsymbol{w}$ until it reaches the global minima. 
         $$ \boldsymbol{w}_j := \boldsymbol{w}_j - \alpha \frac{1}{m}\sum_{i=1}^{m}(h_{\boldsymbol{w}}(\boldsymbol{x}^i) - \boldsymbol{y}^i) $$
-    \end{fact}
 
-    \begin{fact}{Normal Equation Solution}
+    \subsubsection{Normal Equation Solution}
         The closed form solution to the linear system in $\boldsymbol{w}$
-
         $$ \frac{\partial J{\boldsymbol{w}}}{\partial \boldsymbol{w}_j} = \frac{1}{m}\sum_{i=1}^m(\boldsymbol{w}^T\boldsymbol{x}^{i}-\boldsymbol{y}^{i})\boldsymbol{x}_{j}^i = 0 $$
-
-        \noindent writing this as a linear system in $w$ we get $A\boldsymbol{w} = b$ where
-
+        writing this as a linear system in $w$ we get $A\boldsymbol{w} = b$ where
         $$ A = \sum_{n=1}^N(\boldsymbol{x}_n \boldsymbol{x}_n^T) \ \textrm{and} \ b = \sum_{n=1}^N(\boldsymbol{x_n} y_n) $$
-    
-        \noindent so we can solve for $\boldsymbol{w} = \boldsymbol{A}^{-1}\boldsymbol{b}$ and get the following vectorized solution.
-
+        so we can solve for $\boldsymbol{w} = \boldsymbol{A}^{-1}\boldsymbol{b}$ and get the following vectorized solution.
         $$ \boldsymbol{w} = (X^TX)^{-1}X^T\boldsymbol{y} $$
-
-    \end{fact}
 
     \subsection{Generalized Linear Models}
         Often times our data won't be linear and it could be of a higher degree polynomial or a completely different distribution altogether. We can turn this non-linear problem into 
         a linear regression problem by mapping the data to a different vector space using a basis function.
 
-        \noindent To demonstrate, let us consider a N x 1 (feature) dataset. Let $\phi$ denote the polynomial basis function where
+        To demonstrate, let us consider a N x 1 (feature) dataset. Let $\phi$ denote the polynomial basis function where
         $\phi_j(\boldsymbol{x}) = x^j$. Then we can express our hypothesis as: 
         $$ h_{\boldsymbol{w}}(\boldsymbol{x}) = w_0\phi(x) + w_1\phi_1(x) + w_2\phi_2(x) + ... + w_3\phi_3(x) $$
 
-        \noindent A dataset with 3 features with a polynomial basis would have a hypothesis as such
+        A dataset with 3 features with a polynomial basis would have a hypothesis as such
         $$ h_{\boldsymbol{w}}(\boldsymbol{x}) = w_0 + w_1x_1 + w_2x_2 + w_3x_1^2 + w_4x_2^2 + w_5x_1^2x_2 + w_6x_1x_2^2 + w_7x_1^2x_2^2 + w_8x_1^3 + w_9x_2^3 $$
 
-        \noindent This can then be extrapolated to n-features.
-
-        \noindent Some commonly used basis functions are:
+        This can then be extrapolated to n-features. Some commonly used basis functions are:
 
         \begin{itemize}
             \item Polynomial: $\phi_j(\boldsymbol{x}) = x^j$
@@ -281,17 +261,13 @@ TODO:
         \begin{fact}{Ridge Regression}
         Ridge Regression (Tikhonov Regularization) is a regularized version of Linear regression with a regularization term of $\frac{\lambda}{2}\|w\|_2^2$ ($l_2$-norm) added to the cost function.
         This forces the learning algorithm to fit the data but also keep the model weights as small as possible. The hyperparameter $\lambda$ controls how much you want to regularize the model.
-
         $$ J(\boldsymbol{w}) = MSE(\boldsymbol{w}) + \frac{\lambda}{2}\|w\|^2_2 $$
-        
         \end{fact}
 
         \begin{fact}{Lasso Regression}
             \textit{Least Absolute Shrinkage and Selection Operator Regression} is another regularized version of Linear Regression, it adds a regularization term to the cost function
             but uses the $l_1$ norm of the weight vector instead of half the square of the $l_2$ norm.
-
             $$ J(\boldsymbol{w}) = MSE(\boldsymbol{w}) + \lambda\sum_{i=1}^n|w_i| $$
-
             An important characteristic of Lasso Regression is that it tends to eliminate the weights of the least important features (i.e, set them to zero). Lasso Regression automatically performs 
             feature selection and outputs a \textit{sparse model}.
         \end{fact}
@@ -299,7 +275,6 @@ TODO:
         \begin{fact}{Elastic Net}
             Elastic Net is a middle ground between Ridge Regression and Lasso Regression. The regularization term is a simple mix of both Ridge and Lasso's regularization terms and you can control the mix
             ratio $r$. When $r = 0$, Elastic Net is equivalent to Ridge Regression, and when $r = 1$, it is equivalent to Lasso Regression.
-    
             $$ J(\boldsymbol{w}) = MSE(\boldsymbol{w}) + \frac{(1-r)\lambda}{2}\|w\|^2_2 +  r\lambda\sum_{i=1}^n|w_i| $$
         \end{fact}
         
