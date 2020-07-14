@@ -203,13 +203,55 @@ TODO:
         \item Other methods e.g Newtons Method
     \end{itemize}
 
+\section{Statistical Learning}
+    Data is often incomplete, indirect, or noisy. Statistical learning lets us consider forms of uncertainty to help us build better models.
 
-\section{Linear Models}
-    TODO:
+    \subsection{Bayesian Learning}
+    Bayes' theorem describes the probability of an event $H$ given evidence $e$.
+    \begin{align}
+        P(H|e) &= \frac{P(e|H)P(H)}{P(e)} \\
+        &= kP(e|H)P(H)
+    \end{align}
+
+    where:
     \begin{itemize}
-        \item Gradient Descent
+        \item $P(H|e)$: Posterior probability
+        \item $P(e|P)$: Likelihood
+        \item $P(H)$: Prior probability
+        \item $P(e)/k$: Normalizing constant
     \end{itemize}
 
+    Bayesian Learning consists of determining the posterior probability using Bayes' theorem.
+    
+    Suppose we want to make a prediction about an unknown quantity X we can consider the hypothesis space which represents all possible models $h_i$ to predict the scenario.
+
+    \begin{align}
+        P(X|\boldsymbol{e}) &= \sum_i P(X|e, h_i)P(h_i|e) \\
+        &= \sum_i P(X|h_i)P(h_i|e)
+    \end{align}
+
+    This prediction yields the weighted combination of all the hypothesis' in the hypothesis space based on it's likelihood from the evidence. The prior $P(h_i | e)$ is yields the weight for each hypothesis and $P(X|h_i)$ yields the likelihood
+    of the hypothesis for the unknown quantity $X$.
+
+    Bayesian probability is:
+    \begin{itemize}
+        \item Optimal: give a prior probability, no prediction is correct more often than the Bayesian prediction.
+        \item Overfitting-free: all hypothesis are weighted and considered, eliminating overfitting.
+    \end{itemize}
+
+    One of the constraints of bayesian learning is that it can be intractable when the hypothesis space grows very large, often as a result of approximating a continuous hypothesis space with many discrete hypothesis. This requires us to approximate 
+    Bayesian Learning.
+
+    \subsection{Approximate Bayesian Learning}
+    \subsubsection{Maximum a Posteriori}
+        Maximum a Posteriori (MAP) makes predictions based on only the most probable hypothesis $h_{MAP} = argmax_{h_i}P(h_i | e)$. This differs from Bayesian learning, which makes predictions for all hypothesis weighted by their probability. 
+        MAP and Bayesian learning predictions tend to converge as the amount of data increases, and overfitting can be mitigated by giving complex hypothesis a low prior probability. However, finding $h_{MAP}$ may be difficult or intractable.
+
+    \subsubsection{Maximum Likelihood}
+        Maximum Likelihood (ML) simplifies MAP by assuming uniform prior probabilities and then makes a prediction based on the most probable hypothesis $h_{ML}$. ML tends to be less accurate than MAP and Bayesian predictions, it is also subject to overfitting
+        due to the prior probabilities being uniform. Finding $h_{ML}$ is easier than finding $h_{MAP}$ since finding $h_{ML}$ for $P(e|h)$ is equivalent to calculating it for $argmax_h \sum_n logP(e_n |h)$.
+
+\section{Linear Models}
     \subsection{Linear Regression}
     \subsubsection{Formulation}
         Linear Regression is a supervised machine learning algorithm where the predicted output is continuous and has a constant slope. Our main objective is to generate a line that
@@ -328,14 +370,14 @@ TODO:
         Often times our data won't be linear and it could be of a higher degree polynomial or a completely different distribution altogether. We can turn this non-linear problem into 
         a linear regression problem by mapping the data to a different vector space using a basis function.
 
-        To demonstrate, let us consider a N x 1 (feature) dataset. Let $\phi$ denote the polynomial basis function where
+        To demonstrate, let us consider Linear Regression on a nonlinear N x 1 (feature) dataset. Let $\phi$ denote the polynomial basis function where
         $\phi_j(\boldsymbol{x}) = x^j$. Then we can express our hypothesis as: 
         $$ h_{\boldsymbol{w}}(\boldsymbol{x}) = w_0\phi(x) + w_1\phi_1(x) + w_2\phi_2(x) + ... + w_3\phi_3(x) $$
 
         A dataset with 3 features with a polynomial basis would have a hypothesis as such
         $$ h_{\boldsymbol{w}}(\boldsymbol{x}) = w_0 + w_1x_1 + w_2x_2 + w_3x_1^2 + w_4x_2^2 + w_5x_1^2x_2 + w_6x_1x_2^2 + w_7x_1^2x_2^2 + w_8x_1^3 + w_9x_2^3 $$
 
-        This can then be extrapolated to n-features. Some commonly used basis functions are:
+        This can then be extrapolated to logistic regression and n-features. Some commonly used basis functions are:
 
         \begin{itemize}
             \item Polynomial: $\phi_j(\boldsymbol{x}) = x^j$
