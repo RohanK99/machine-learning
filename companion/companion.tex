@@ -180,10 +180,12 @@
 \section{Data Analysis}
 TODO:
 \begin{itemize}
+    \item Notation Sheet
     \item Data Model
     \item Overfitting/Underfitting
     \item Feature Normalization
     \item Types of Loss Functions
+    \item Show what the gaussian distribution expansion is
 \end{itemize}
 
 \section{Activation Functions}
@@ -204,6 +206,13 @@ TODO:
     \end{itemize}
 
 \section{Statistical Learning}
+    TODO:
+    \begin{itemize}
+        \item Show statistical derivation of Linear Regression
+        \item Mixture of Gaussian
+        \item Show statistical derivation of Logistic Regression
+    \end{itemize}
+
     Data is often incomplete, indirect, or noisy. Statistical learning lets us consider forms of uncertainty to help us build better models.
 
     \subsection{Bayesian Learning}
@@ -251,6 +260,116 @@ TODO:
         Maximum Likelihood (ML) simplifies MAP by assuming uniform prior probabilities and then makes a prediction based on the most probable hypothesis $h_{ML}$. ML tends to be less accurate than MAP and Bayesian predictions, it is also subject to overfitting
         due to the prior probabilities being uniform. Finding $h_{ML}$ is easier than finding $h_{MAP}$ since finding $h_{ML}$ for $P(e|h)$ is equivalent to calculating it for $argmax_h \sum_n logP(e_n |h)$.
 
+    \subsection{Bayesian Linear Regression}
+        Instead of taking the hypothesis $\boldsymbol{w}$ that maximizes the posterior we can compute the posterior and work with that directly as follows:
+        \begin{align*}
+            P(\boldsymbol{w}|\boldsymbol{y}, \boldsymbol{X}) &= \frac{P(\boldsymbol{y}|\boldsymbol{w}, \boldsymbol{X})P(\boldsymbol{w}|\boldsymbol{X})}{P(\boldsymbol{y}|\boldsymbol{x})} \\
+            &= ke^{-\frac{1}{2}(\boldsymbol{w}-\overline{\boldsymbol{w}})^T\boldsymbol{A}(\boldsymbol{w}-\overline{\boldsymbol{w}})} \\
+            &= N(\overline{\boldsymbol{w}}, \boldsymbol{A^{-1}})
+        \end{align*}
+
+        where
+        \begin{align*}
+        \overline{w} &= \sigma^{-2}\boldsymbol{A^{-1}}\overline{\boldsymbol{X}}\boldsymbol{y} \\
+        A &= \sigma^{-2}\boldsymbol{\overline{X}\overline{X}}^T + \boldsymbol{\Sigma^{-1}}
+        \end{align*}
+
+        \subsubsection{Prediction}
+            Let us consider an input $\boldsymbol{x_*}$ for which we want a corresponding prediction $y_*$.
+
+            \begin{align*}
+                P(y_*|\overline{\boldsymbol{x_*}}, \overline{\boldsymbol{X}}, \boldsymbol{y}) &= \int_{\boldsymbol{w}} P(y_*|\overline{\boldsymbol{x_*}},\boldsymbol{w})P(\boldsymbol{w}|\overline{\boldsymbol{X}},\boldsymbol{y})d\boldsymbol{w} \\
+                &= k \int_{\boldsymbol{w}} e^{-\frac{(y_* - \overline{\boldsymbol{x}}^T\boldsymbol{w})^2}{2\sigma^2}} ke^{-\frac{1}{2}(\boldsymbol{w}-\overline{\boldsymbol{w}})^T\boldsymbol{A}(\boldsymbol{w}-\overline{\boldsymbol{w}})}d\boldsymbol{w} \\
+                &= N(\overline{\boldsymbol{x_*}}^T \boldsymbol{A}^{-1}\overline{\boldsymbol{X}}\boldsymbol{y}, \overline{\boldsymbol{x_*}}^T \boldsymbol{A}^{-1} \overline{\boldsymbol{x_*}})
+            \end{align*}
+
+            This gives us a gaussian distribution of the solution. Generally for the prediction we take the mean of the distribution. 
+    
+    \subsection{Mixture of Gaussians}
+        Now we consider the probabilistic generative model for classification. We can compute the posterior $P(C|\boldsymbol{x})$ according to Bayes' theorem to estimate the probability of the class for a given data point. Here we are using
+        Bayes theorem for inference rather than for Bayesian learning (estimating parameters of a model).
+        \begin{align*}
+            P(C|\boldsymbol{x}) &= \frac{P(\boldsymbol{x}|C)P(C)}{\sum_C P(\boldsymbol{x}|C)P(C)} \\
+            &= k P(\boldsymbol{x}|C)P(C)
+        \end{align*}
+
+        where:
+        \begin{itemize}
+            \item $P(C)$: Prior probability of class $C$
+            \item $P(\boldsymbol{x}|C)$: class conditional distribution of $\boldsymbol{x}$
+        \end{itemize}
+
+        with the following assumptions:
+        \begin{itemize}
+            \item In classification the number of classes is finite, so a natural prior $P(C)$ is the multinomial $P(C = c_k) = \pi_k$
+            \item when $\boldsymbol{x} \in \mathbb{R}$ then it is often ok to assume that $P(\boldsymbol{x}|C)$ is Gaussian.
+            \item Assume the same covariance matrix $\boldsymbol{\Sigma}$ is used for each class.
+        \end{itemize}
+
+        From our assumptions we get
+        $$P(\boldsymbol{x}|c_k) \propto e^{-\frac{1}{2}(\boldsymbol{x} - \boldsymbol{\mu}_k)^T \boldsymbol{\Sigma}^{-1}(\boldsymbol{x} - \boldsymbol{\mu}_k)} $$
+
+
+        \subsubsection{Binary Classification}
+        Subbing our assumptions into Bayes theorem for binary classification and simplifying, we get the following posterior distribution for classes $c_k, c_j$.
+        $$ P(c_k|\boldsymbol{x}) = \frac{1}{1+e^{-\boldsymbol{w}^T\boldsymbol{x} + w_0}} $$
+
+        where:
+        \begin{align*}
+            \boldsymbol{w} &= \boldsymbol{\Sigma}^{-1}(\boldsymbol{\mu}_k - \boldsymbol{\mu}_j) \\
+            w_0 &= \boldsymbol{\mu}^T_k \boldsymbol{\Sigma}^{-1}\boldsymbol{\mu}_k + \frac{1}{2}\boldsymbol{\mu}^T_j\boldsymbol{\Sigma}^{-1}\boldsymbol{\mu}_j + ln\frac{\pi_k}{\pi_j}
+        \end{align*}
+
+        We can observe that this equation is the \hyperlink{Sigmoid Function}{logistic sigmoid} and we can draw the class boundary at $\sigma(\boldsymbol{w}^T\boldsymbol{x} + w_0) = 0.5$.
+        
+        \subsubsection{Multinomial Classification}
+        Now similarly for a multi-class problem with $K$ classes we get.
+        $$ P(c_k | \boldsymbol{x}) = \frac{e^{\boldsymbol{w}^T_k\boldsymbol{x}}}{\sum_j e^{\boldsymbol{w}^T_j\boldsymbol{x}}} $$
+
+        where
+        $$ \boldsymbol{w}^T_k = (-\frac{1}{2}\boldsymbol{\mu}^T_k \boldsymbol{\Sigma}^{-1} \boldsymbol{\mu}_k + ln\pi_k, \boldsymbol{\mu}_k^T\boldsymbol{\Sigma}^{-1}) $$
+
+        This process can be extrapolated for classes that aren't all distributed with a gaussian distribution (e.g exponential, poisson, bernoulli etc ...). We can see that this is a specific case of the \hyperlink{Softmax Regression}{softmax distribution} which is a generalization of the sigmoid 
+        and is discussed in further detail in the next section.
+
+        \subsubsection{Parameter Estimation}
+            Let $\pi = P(y = C_1)$ and $1 - \pi=P(y = C_2)$ where $P(x|C_1)=N(x|\mu_1, \Sigma)$ and $P(x|C_2) = N(x|\mu_2, \Sigma)$. In order to actually use bayesian inference to get the classification probability of our input data, we need to learn the parameters $\pi$, $\mu_1$, $\mu_2$ and $\Sigma$. 
+            We can estimate the parameters by maximum likelihood, maximum a posteriori or bayesian learning. This example will demonstrate using maximum likelihood to learn these parameters.
+
+            We can express the Likelihood of our training set as $L(\boldsymbol{X},\boldsymbol{y}) = P(\boldsymbol{X},\boldsymbol{y}|\pi,\boldsymbol{\mu}_1,\boldsymbol{\mu}_2,\boldsymbol{\Sigma})$. We want to maximize the likelihood in order to use Bayes inference.
+            $$ L(\boldsymbol{X},\boldsymbol{y}) = \prod_{n}{[\pi|\boldsymbol{\mu}_1, \boldsymbol{\Sigma}]^{y_n}[(1-\pi)|N(\boldsymbol{x}_n|\boldsymbol{\mu}_2,\boldsymbol{\Sigma})]^{1-y_n}} $$
+            Taking the log we can turn this into an optimization problem of finding
+            \begin{multline*}
+                argmax_{\pi, \boldsymbol{\mu}_1, \boldsymbol{\mu}_2, \boldsymbol{\Sigma}} \sum _{n}y_n[ln\pi - \frac{1}{2}(\boldsymbol{x}_n - \boldsymbol{\mu}_1)^T \boldsymbol{\Sigma}^{-1}(\boldsymbol{x}_n-\boldsymbol{\mu}_1)]\\ 
+                + (1-y_n)[ln\pi - \frac{1}{2}(\boldsymbol{x}_n - \boldsymbol{\mu}_2)^T \boldsymbol{\Sigma}^{-1}(\boldsymbol{x}_n-\boldsymbol{\mu}_2)]
+            \end{multline*}
+            Now to estimate $\pi$ (probability of class) we can take:
+            \begin{align*}
+                0 &= \frac{\partial lnL(X,y)}{\partial \pi} \\
+                \pi &= \frac{\sum_n{y_n}}{N} \\
+            \end{align*}
+            Now to estimate $\mu_1$ and $\mu_2$ (mean of classes) we can take:
+            \begin{align*}
+                0 &= \frac{\partial lnL(X,y)}{\partial \mu_1} \\
+                \mu_1 &= \frac{\sum_n{y_n}{x_n}}{N_1} \\
+            \end{align*}
+            and 
+            \begin{align*}
+                0 &= \frac{\partial lnL(X,y)}{\partial \mu_2} \\
+                \mu_2 &= \frac{\sum_n{(1-y_n)}{x_n}}{N_2} \\
+            \end{align*}
+            Now to estimate $\Sigma$ (covariance matrix) we can take:
+            \begin{align*}
+                0 &= \frac{\partial lnL(X,y)}{\partial \Sigma} \\
+               \Sigma &= \frac{N_1}{N}S_1 + \frac{N_2}{N}S_2\\
+            \end{align*}
+            where $S_k$ are the empirival covariance matrices of the class k
+            \begin{align*}
+                S_1 &= \frac{1}{N_1}\sum _{n\in C_1}{(x_n-\mu_1)(x_n-\mu_1)^T}\\
+                S_2 &= \frac{1}{N_1}\sum _{n\in C_2}{(x_n-\mu_2)(x_n-\mu_2)^T}\\
+            \end{align*}
+
+        
 \section{Linear Models}
     \subsection{Linear Regression}
     \subsubsection{Formulation}
@@ -273,7 +392,8 @@ TODO:
 
     \subsubsection{Cost Function}
         To predict based on a dataset we first need to learn the weights that minimize the mean squared error (euclidean loss) of our hypothesis. We can define the following to be our cost function to
-        minimize with $m$ being the number of data points and $i$ being the $i^{th}$ training example.
+        minimize with $m$ being the number of data points and $i$ being the $i^{th}$ training example. This can also be proven by applying \hyperlink{Maximum Likelihood}{maximum likelihood} with
+        gaussian noise. Similarly we can come up with the regularized least square problem by applying \hyperlink{Maximum a Posteriori}{maximum a posteriori} on noisy linear regression.
         \begin{align*}
             J(\boldsymbol{w}) &= \frac{1}{2m}\sum_{i=1}^{m}(h_{\boldsymbol{w}}(\boldsymbol{x}^i) - y^i)^2 \\
             &= \frac{1}{2m}(X\boldsymbol{w} - \boldsymbol{y})^T(X\boldsymbol{w} - \boldsymbol{y})
@@ -297,7 +417,8 @@ TODO:
     \subsection{Logistic Regression}
         \subsubsection{Formulation}
             Logistic regression is an algorithm used for classification. It is used to estimate the probability that an instance belongs to a particular class. If the estimated probability is
-            greater than 50\%, then the model predicts the instance belongs to that class, and otherwise it predicts it does not. This makes it a binary classifier.
+            greater than 50\%, then the model predicts the instance belongs to that class, and otherwise it predicts it does not. Its motivation stems from probabilistic discriminative models except 
+            now we are learning $P(c_k|\boldsymbol{x})$ by max likelihood instead of learning $P(c_k)$ and $P(\boldsymbol{x}|c_k)$ by max likelihood and $P(c_k|\boldsymbol{x})$ by Bayesian Inference.
 
         \subsubsection{Prediction}
             Logistic Regression computers the weighted sum of the input features (plus a bias term) and outputs the logistic (\hyperlink{sigmoid function}{Sigmoid Function}) of the result. The hypothesis is given by
@@ -343,26 +464,26 @@ TODO:
             \end{itemize}
 
         \subsubsection{Softmax Regression}
-            The Logistic Regression model can be generalized to support multiple classes. When given an instance $\boldsymbol{x}$, the Softmax Regression model computes a score $s_k(\boldsymbol{x})$ for each class $k$,
+            The Logistic Regression model can be generalized to support multiple classes. When given an instance $\boldsymbol{x}$, the Softmax Regression model computes a score $f_k(\boldsymbol{x})$ for each class $k$,
             then estimates the probability of each class by applying the \textit{softmax function} to the scores. 
 
-            $$ s_k(\boldsymbol{x}) = \boldsymbol{w}^T_k\boldsymbol{x} $$
+            $$ f_k(\boldsymbol{x}) = \boldsymbol{w}^T_k\boldsymbol{x} $$
 
-            Once the score of every class for the instance $\boldsymbol{x}$ is computed, you can estimate the probability $p_k$ that the instance belongs to class $k$. The function computes the exponential of each score, 
+            Once the score of every class for the instance $\boldsymbol{x}$ is computed, you can estimate the probability $\pi_k$ that the instance belongs to class $k$. The function computes the exponential of each score, 
             the normalizes them.
 
-            $$ p_k = P(y^{(i)} = k | \boldsymbol{x}^{(i)}, \boldsymbol{w}) = \frac{exp(s_k(\boldsymbol{x}))}{\sum_{j=1}^K exp(s_j(\boldsymbol{x}))} $$
+            $$ \pi_k = P(y^{(i)} = k | \boldsymbol{x}^{(i)}, \boldsymbol{w}) = \frac{e^{f_k(\boldsymbol{x})}}{\sum_{j=1}^K e^{f_j(\boldsymbol{x})}} $$
 
             The Softmax Regression classifier predicts the class with the highest estimated probability.
 
             The cost function associated with the Softmax Regression Classifier is the Cross Entropy cost function; it penalizes the model when it estimates a low probability for a target class. Cross entropy is used to
             measure how well a set of estimates class probabilities matches the target class. The cost function is represented as such
 
-            $$ J(\boldsymbol{w}) = -\frac{1}{m}\sum_{i=1}^m \sum_{k=1}^K y_k^{(i)} log(p^{(i)}_k) $$
+            $$ J(\boldsymbol{w}) = -\frac{1}{m}\sum_{i=1}^m \sum_{k=1}^K y_k^{(i)} log(\pi^{(i)}_k) $$
 
             with gradient vector
 
-            $$ \nabla_{w_k} J(\boldsymbol{w}) = \frac{1}{m}\sum_{i=1}^m(p^{(i)}_k - y^{(i)}_k)\boldsymbol{x}^{(i)} $$
+            $$ \nabla_{w_k} J(\boldsymbol{w}) = \frac{1}{m}\sum_{i=1}^m(\pi^{(i)}_k - y^{(i)}_k)\boldsymbol{x}^{(i)} $$
 
             that can be paired with an optimization algorithm to solve.
 
@@ -394,19 +515,19 @@ TODO:
         \subsubsection{Ridge Regression}
         Ridge Regression (Tikhonov Regularization) is a regularized version of Linear regression with a regularization term of $\frac{\lambda}{2}\|w\|_2^2$ ($l_2$-norm) added to the cost function.
         This forces the learning algorithm to fit the data but also keep the model weights as small as possible. The hyperparameter $\lambda$ controls how much you want to regularize the model.
-        $$ J(\boldsymbol{w}) = MSE(\boldsymbol{w}) + \frac{\lambda}{2}\|w\|^2_2 $$
+        $$ J(\boldsymbol{w}) = ERROR(\boldsymbol{w}) + \frac{\lambda}{2}\|w\|^2_2 $$
 
         \subsubsection{Lasso Regression}
             \textit{Least Absolute Shrinkage and Selection Operator Regression} is another regularized version of Linear Regression, it adds a regularization term to the cost function
             but uses the $l_1$ norm of the weight vector instead of half the square of the $l_2$ norm.
-            $$ J(\boldsymbol{w}) = MSE(\boldsymbol{w}) + \lambda\sum_{i=1}^n|w_i| $$
+            $$ J(\boldsymbol{w}) = ERROR(\boldsymbol{w}) + \lambda\sum_{i=1}^n|w_i| $$
             An important characteristic of Lasso Regression is that it tends to eliminate the weights of the least important features (i.e, set them to zero). Lasso Regression automatically performs 
             feature selection and outputs a \textit{sparse model}.
 
         \subsubsection{Elastic Net}
             Elastic Net is a middle ground between Ridge Regression and Lasso Regression. The regularization term is a simple mix of both Ridge and Lasso's regularization terms and you can control the mix
             ratio $r$. When $r = 0$, Elastic Net is equivalent to Ridge Regression, and when $r = 1$, it is equivalent to Lasso Regression.
-            $$ J(\boldsymbol{w}) = MSE(\boldsymbol{w}) + \frac{(1-r)\lambda}{2}\|w\|^2_2 +  r\lambda\sum_{i=1}^n|w_i| $$
+            $$ J(\boldsymbol{w}) = ERROR(\boldsymbol{w}) + \frac{(1-r)\lambda}{2}\|w\|^2_2 +  r\lambda\sum_{i=1}^n|w_i| $$
         
         \subsubsection{Early Stopping}
             Early Stopping is a different way to regularize iterative learning algorithms such as Gradient Descent. This method aims to stop training as soon as the validation error reaches a minimum. For all
