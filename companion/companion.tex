@@ -213,13 +213,53 @@ TODO:
         is positive and 0 if it is negative.
 
 \section{Convex Optimization}
-    TODO:
-    \begin{itemize}
-        \item Gradient Descent
-        \item Normal Solution
-        \item Other methods e.g Newtons Method
-    \end{itemize}
+    In machine learning we can often turn problems into convex functions and simplify the problem into finding the global minima of the function, which in essence is minimizing the training error. One of the key theorem's of a convex function is 
+    that the local minimum of a convex function is also a global minimum. Therefore we can apply many methods to find parameters that satisfy the global minima.
 
+    \subsection{Normal Solution}
+        To find the value of our parameter (generally $\boldsymbol{w}$) that minimizes the cost function, there is a closed-form solution. We can express this closed form solution for any convex loss function as follows.
+        $$ \frac{\partial J(\boldsymbol{w})}{\partial \boldsymbol{w}} = 0 $$
+        
+        The limitations of using the Normal Solution is that we usually have to compute the inverse of $X^TX$ which is a $(n+1) \times (n+1)$ matrix (where $n$ is the number of features). The computational complexity of inverting 
+        such a matrix is typically about $O(n^{2.4})$ to $O(n^{3})$, depending on the implementation. Some of the other approaches below are better suited for cases where there are a large number of features or too many training instances
+        to fit in memory.
+
+    \subsection{Gradient Descent}
+        Gradient Descent is a generic optimization algorithm capable of finding optimal solution to a wide range of problems. The general ida is to tweak parameters iteratively in order to minimize a cost function. The main concept utilized in
+        gradient descent is to measure the local gradient of the error with regard to the parameter vector and move in the direction of the descending gradient. Once the gradient is zero, you have reached the minimum.
+
+        You start with filling your parameter $\boldsymbol{w}$ with random values (random initialization. Then you improve it gradually, taking small steps at a time, each step attempting to decrease the cost function, until the algorithm converges
+        to a minimum. One important parameter of Gradient Descent is the size of the steps, determined by the \textit{learning rate} hyperparameter. If the learning rate is too small, then the algorithm will have to go through many iterations to converge,
+        if the learning rate is too high, you might jump across the minimum possibly, higher than you were before and potentially make the algorithm diverge. One gradient descent technique is having a learning rate that changes as you approach 
+        the minimum to prevent overshoot, also called the learning schedule.
+
+        A limitation of Gradient Descent is when the cost function we are dealing with is not a convex function. In this case holes, ridges, irregular terrain will make the convergence to the minimum difficult.
+
+        \subsubsection{Batch Gradient Descent}
+            To implement Gradient Descent, you need to compute the gradient of the cost function with regard to each model parameter $\boldsymbol{w}_j$ - how much the cost function will change if you change $\boldsymbol{w}_j$
+            a little bit. This is equivalent to the partial derivative of the cost function with regard to the parameter $\boldsymbol{w}_j$. For the entire parameter vector $\boldsymbol{w}$ we can denoted the gradient vector as
+            $\nabla_{\boldsymbol{w}} J(\boldsymbol{w})$.
+
+            Once we have the gradient vector, which points uphill, we descend in the opposite direction (subtract $\nabla_{\boldsymbol{w}} J(\boldsymbol{w})$ from $\boldsymbol{w}$). This is where we use our learning rate $\alpha$ to determine the size of the
+            downhill step.
+            $$ \boldsymbol{w}^{(next step)} = \boldsymbol{w} - \alpha \nabla_{\boldsymbol{w}} J(\boldsymbol{w}) $$
+
+            The limitation of Batch Gradient Descent is the fact that it uses the whole training set to compute the gradients at every step, which makes it very slow when the training set is large.
+        
+        \subsubsection{Stochastic Gradient Descent}
+            Stochastic Gradient Descent picks a random instance in the training set at every step and computes the gradients based on only that single instance. This makes the algorithm much faster and also makes it possible to train on huge training sets.
+            However, due to its stochastic nature, this algorithm will bounce up and down, decreasing only on average. Over time it will end up very close to the minimum, but once it gets there it will continue to bounce around, never settling down.
+            Therefore, once the algorithm stops, the final parameter values are good, but not optimal.
+
+            This can actually help when the cost function is very irregular (not convex) as it can help the algorithm jump out of a local minima. One solution to the problem of being unable to settle at the minimum 
+            is gradually reducing the learning rate. The steps start out large (helps make quick progress and escape local minima), then get smaller and smaller, allowing the algorithm to settle at the global minima.
+            The function that determines the learning rate is called the \textit{learning schedule}.
+        
+        \subsubsection{Mini-batch Gradient Descent}
+            Mini-batch GD is a combination of Batch GD and Stochastic GD. At each step, instead of computing the gradients based on the full training set or based on just one instance, Mini-batch GD computes the gradient on small random sets of instances 
+            called \textit{mini-batches}. The main advantage of this over Stochastic GD is that you get a performance boost from hardware optimization of matrix operations. Mini-batch will perform better to get closer to the minimum than Stochastic GD but it 
+            may be harder for it to escape local minima.
+    
 \section{Instance-Based Learning}
     \subsection{Parametric vs Non-Parametric Methods}
         Datasets can be represented as a set of points in a high-dimensional space; a data point with $n$ features $\boldsymbol{x}_1, \boldsymbol{x}_2, ..., \boldsymbol{x}_n$ can be represented
