@@ -8,6 +8,7 @@
 \usepackage{amsmath}
 \usepackage{changepage}
 \usepackage[makeindex]{imakeidx}
+\usepackage{titlesec}
 \usepackage{textcomp}
 \usepackage{gensymb}
 \usepackage{xcolor, soul}
@@ -17,6 +18,14 @@
 
 \definecolor{linkColour}{RGB}{140, 25, 57}
 \definecolor{urlColour}{RGB}{137, 62, 27}
+
+\setcounter{section}{-1}
+\setcounter{secnumdepth}{4}
+
+\titleformat{\paragraph}
+{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+\titlespacing*{\paragraph}
+{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
 
 \hypersetup{
     colorlinks,
@@ -76,7 +85,30 @@
 \tableofcontents
 \newpage
 
-\section*{Introduction}
+\section*{Sources}
+    Throughout this compendium, each piece of information will be formatted as such.
+    
+    \vspace{0.1in}
+    \begin{fact*}[Source]{Name / Description of fact}
+        Information about fact.
+    \end{fact*}
+    \vspace{0.3in}
+    
+    \noindent The location which currently contains ``Source'' could potentially be filled with a variety of sources. Here is how to find the source based off the shortened form.
+    
+    \begin{itemize}
+        \item \hypertarget{homl}{\textbf{Hands-On Machine Learning}} refers to Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow, 2nd Edition by Aurélien Géron
+    \end{itemize}
+
+\newpage
+
+\section{Notation}
+\begin{itemize}
+    \item Notation Sheet
+    \item Show what the gaussian distribution expansion is
+\end{itemize}
+
+\section{Introduction}
 
 \subsection{What is Machine Learning}
     Machine Learning is the field of study that gives computers the ability to learn from data without being 
@@ -152,35 +184,171 @@
         best strategy, called a policy, to get the most reward over time. A policy defines what action the agent should choose when it is in a given
         situation.
 
-\newpage
-
-\section*{Sources}
-    Throughout this compendium, each piece of information will be formatted as such.
-    
-    \vspace{0.1in}
-    \begin{fact*}[Source]{Name / Description of fact}
-        Information about fact.
-    \end{fact*}
-    \vspace{0.3in}
-    
-    \noindent The location which currently contains ``Source'' could potentially be filled with a variety of sources. Here is how to find the source based off the shortened form.
-    
-    \begin{itemize}
-        \item \hypertarget{homl}{\textbf{Hands-On Machine Learning}} refers to Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow, 2nd Edition by Aurélien Géron
-    \end{itemize}
-
-\newpage
-
 \section{Data Analysis}
-TODO:
-\begin{itemize}
-    \item Notation Sheet
-    \item Data Model
-    \item Overfitting/Underfitting
-    \item Feature Normalization
-    \item Types of Loss Functions
-    \item Show what the gaussian distribution expansion is
-\end{itemize}
+    \subsection{Limitations of Data}
+        \subsubsection{Nonrepresentative Training Data}
+        One thing to look out for when using training data is whether the data is 
+        representative of the new cases you want to generalize to. For example if you are training linear regression life satisfaction vs GDP of countries,
+        if some countries are missing from the dataset then the dataset is not fully representative of the problem.
+
+        \subsubsection{Poor Quality Data}
+        If your data is full of errors, outliers and noise, it will make it harder for the system to detect the underlying patterns, so your system is less likely
+        to perform well. In order to mitigate this we need to clean the training data.
+        \begin{itemize}
+            \item If some instances are outliers, it may help to discard them or try to fix the errors manually
+            \item If some instances are missing features, you may decide to ignore that attribute, ignore the instance, fill in the missing values, or train one model with the feature and one without
+        \end{itemize}
+
+        \subsubsection{Irrelevant Features}
+        A critical part of the success of a Machine Learning project is coming up with a good set of features to train on. This process is called \textit{feature engineering}.
+        \begin{itemize}
+            \item \textit{Feature selection}: Selecting the most useful features to train on among the existing features
+            \item \textit{Feature extraction}: Combining existing features to produce a more useful one (dimensionality reduction algorithms can help)
+            \item Creating new features by gathering new data.
+        \end{itemize}
+
+    \subsection{Feature Engineering}
+        \subsubsection{Feature Construction}
+            Features can be modified for various reasons, including to increase predictor performance and to reduce time or memory requirements.
+            Below are common techniques for constructing features.
+
+            \paragraph{Transformation}
+            Common feature transformations include:
+            \begin{itemize}
+                \item \textbf{Centering} each feature to be around the origin.
+                \item \textbf{Scaling} each feature to be of the same scale. For example, scaling can be done to make sure each feature has the same
+                variance or the same maximum absolute value.
+                \item \textbf{Logarithmically} transforming each feature to reduce the skewness of feature distributions.
+            \end{itemize}
+
+            Note that feature transformation runs the risk of discarding useful information. For example, scaling to make each feature have the same
+            variance should not be done if the differing variances of the features are actually relevant to the problem.
+
+            \paragraph{Feature Extraction}
+            Feature expansion involves combining multiple features into new features when first order interactions are not good enough. For example, given
+            features $x_1$ and $x_2$, $x_1 \cdot x_2$ is a new feature (i.e. meta-feature) formed by an expansion of $x_1$ and $x_2$.
+
+            \paragraph{``Ad hoc'' Features}
+            Constructing ad hoc features involves applying domain knowledge to introduce custom features.
+
+        \subsubsection{Feature Selection}
+            Irrelevant features are features that are uncorrelated with a prediction task. Redundant features are features that are highly correlated with
+            one another, so using multiple redundant features does not help with predictions much more than using a single such feature.
+
+            Different learning algorithms have differing levels of robustness to irrelevant or redundant features. For example, decision trees are robust
+            to redundant features, since such features have low information gain, while KNN is not, since the set of redundant features will behave as one heavily
+            weighted feature. When possible, these feature should not be selected in the first place. Below are common ways to avoid selecting such features.
+
+            \paragraph{Wrapper Methods}
+            Wrapper methods involve building a model for feature subsets, and then selecting the best performing model. A ``forward search'' approach
+            starts with no features and then adds the feature that best improves the model until a certain number of features are selected.  A
+            ``backward'' search approach starts with all features and removes the feature that improves the model the least until a certain number
+            of features have been removed.
+
+            Computing all possible feature subsets would guarantee finding the optimal one. However, a problem with $m$ features has $2^m$ possible
+            feature subsets, so finding all possible subsets is infeasible for large values of $m$. The forward and backward search approaches
+            approximate this but with a time complexity of $O(m^2)$.
+
+            \paragraph{Filter Methods}
+            Filter methods, also known as variable ranking, involve assigning each feature a score measuring how informative it is in predictions. This
+            score is determined by some ``scoring function'' $S$. Features are then ranked by score, and a number of top features are selected.
+
+            \paragraph{Embedded Methods}
+            Embedded methods involve  modifying the cost function to constrain the choice of model. A common example of this is regularization, which can
+            be used to penalize complex models and encourage a sparse feature set.
+
+    \subsection{Overfitting}
+        \textit{Overfitting} is when the model performs well on the training data, but does not generalize well. Complex models can detect subtle patterns in the data,
+        but if the training set is noise, or if it is too small, then the model will likely detect patterns in the noise itself. These patterns will not generalize to
+        new instances. Overfitting often happens when the training data has many features, which allows for an approximation of the target function with many degrees of freedom.
+        We can use regularization to constrain a model to make it simpler to reduce the risk of overfitting.
+
+    \subsection{Underfitting}
+        \textit{Underfitting} is the opposite of overfitting: it occurs when the model is too simple to learn the underlying structure of the data. Methods of fixing the problem include:
+        \begin{itemize}
+            \item Select a more powerful model, with more parameters.
+            \item Feed better features to the learning algorithm
+            \item Reduce the constraints on the model (e.g., reduce the regularization hyperparameter)
+        \end{itemize}
+
+    \subsection{Bias Variance Decomposition}
+        Many machine learning algorithms are based on building a formal model based on the training data (e.g. a decision tree). Models have
+        parameters, which are characteristics that can help in classification (e.g. a node in a decision tree). Models may also have hyper-parameters,
+        which in turn control other parameters in a model (e.g. max height of decision tree).
+
+        Generalization errors result from a combination of noise, variance, and bias. Bias concerns how well the type of model fits the data. Models
+        with high bias pay little attention to training data and suffer from underfitting, while models with low bias may pay too much attention to
+        training data and become overfitted. Bias and variance tend to be at odds with one another (high bias typically leads to low variance, and vice
+        versa).
+
+\section{Evaluation of Learning}
+    \subsection{Performance Formulation}
+        Let $\hat{y}$ be an output generated by a function $f$ approximating some target function. Let $y$ be the corresponding
+        output of the target function. A loss function $l(y, \hat{y})$ can be used to measure the accuracy of the approximation
+        function $f$. Some common loss functions include:
+        \begin{itemize}
+        \item Squared Loss: $l(y, \hat{y}) = (y - \hat{y})^2$
+        \item Absolute Loss: $l(y, \hat{y}) = |y - \hat{y}|$
+        \item Zero/One Loss: $l(y, \hat{y}) = 1_{y \neq \hat{y}}$
+        \end{itemize}
+
+        We assume that the data coming from our target function comes from some probability distribution $D$, and that our training data
+        is a random sample of $(x, y)$ pairs from $D$. A Bayes Optimal Classifier is a classifier that for any input $x$, returns the
+        $y$ most likely to be generated by $D$.
+
+        Based on the available training data, the goal of supervised learning is to find a mapping $f$ from $x$ to $y$ such that
+        generalization error $\sum_{(x,y)} D(x,y)l(y,f(x))$ is minimized. However, since $D$ is unknown, we instead estimate the error from
+        the average error in our training or test data, which is $\frac{1}{N}\sum_{n=1}^N l(y_n, f(x_n))$.
+
+    \subsection{Testing and Validation}
+        Models are initially built based on a training dataset. Test sets (also known as holdout sets) are then used to estimate the generalization
+        error. Validation sets are also used to measure the model's performance, but unlike test sets, validation sets can make changes to the model's
+        parameters.
+
+        \subsubsection{Cross Validation}
+            Cross validation is a technique for measuring how well a model generalizes. The idea behind it is to break up a training data set into $K$
+            equally sized partitions, and use $K-1$ of the partitions as training data and the remaining partition for testing. This should be repeated
+            $K$ times, so that all points of data are at some point used for testing. Higher values of $K$ lower the amount of variance of in the error
+            estimation. To avoid training and testing data having a different probability distribution, the data should be shuffled before being split.
+        \subsubsection{Bootstrapping}
+            Bootstrapping is an alternative to cross validation where instead of dividing a training data set into partitions, a random sample of points
+            (with possible duplicates) is used as training data. The remaining points are then used as testing data, with the goal being similar to
+            that of cross validation.
+    
+    \subsection{Performance Evaluation of Classifiers}
+        Consider the following terminology for classification problems:
+        \begin{itemize}
+            \item True positive ($TP$) - Examples of class 1 predicted as class 1
+            \item False positive ($FP$) - Examples of class 0 predicted as class 1 (Type 1 Error)
+            \item True negative ($TN$) - Examples of class 0 predicted as class 0
+            \item False negative ($FN$) - Examples of class 1 predicted as class 0 (Type 2 Error)
+        \end{itemize}
+    
+        \subsubsection{Accuracy and Error}
+            The following formulas can be used to measure accuracy and error:
+            $$Accuracy = \frac{TP + TN}{TP + TN + FP + FN}$$
+            $$ErrorRate = \frac{FP + FN}{TP + TN + FP + FN}$$
+    
+        \subsubsection{Precision and Recall}
+            Precision and recall can be measured as follows:
+            $$P = \frac{TP}{TP + FP}$$
+            $$R = \frac{TP}{TP + FN}$$
+    
+            Precision measures the ratio of positive predictions that were correct, while recall measures the ratio of total positive instances that were
+            predicted. Similarly to how variance and bias are often at odds with one another, so are precision and recall.
+    
+        \subsubsection{F-Measure}
+            An F-measure (also known as a F1 score) measures a model's accuracy by taking into account both precision and recall as follows:
+            $$F = \frac{2PR}{P + R}$$
+    
+            To adjust the relative importance of precision vs recall, a weighted F-measure can be used, which is defined as follows:
+            $$F = \frac{(1 + \beta^2)PR}{\beta^2 P + R}$$
+    
+            In a standard F-measure, $\beta = 1$, $\beta < 1$ means that precision is valued over recall, while $\beta > 1$ means recall is valued over precision.
+    
+        \subsubsection{Sensitivity and Specificity}
+            Sensitivity is the same measure as recall. Specificity is a measure of how well a classifier avoids false positives, and is measured as:
+            $$Specificity = \frac{TN}{TN + FP}$$
 
 \section{Activation Functions}
     \subsection{Sigmoid Function}
