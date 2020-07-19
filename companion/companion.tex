@@ -103,10 +103,24 @@
 \newpage
 
 \section{Notation}
-\begin{itemize}
-    \item Notation Sheet
-    \item Show what the gaussian distribution expansion is
-\end{itemize}
+    \subsection{Data}
+    \begin{flalign*}
+        \boldsymbol{x} &= \begin{pmatrix} x_1 \\ x_2 \\ ... \\ x_M \end{pmatrix} \text{: data point corresponding to a column vector of $M$ features} & \\
+        \overline{\boldsymbol{x}} &= \begin{pmatrix} 1 \\ x_1 \\ x_2 \\ ... \\ x_M \end{pmatrix} \text{: concatenation of 1 with the vector} \boldsymbol{x} & \\
+        \boldsymbol{X} &= \begin{pmatrix} x^{(0)}_1 & ... & x^{(N)}_1 \\ ... & ... & ... \\ x^{(0)}_M & ... & x^{(N)}_M \end{pmatrix} \text{: dataset consisting of $N$ data points and $M$ features} & \\
+        \overline{\boldsymbol{X}} &= \begin{pmatrix} 1 & ... & 1 \\ x^{(0)}_1 & ... & x^{(N)}_1 \\ ... & ... & ... \\ x^{(0)}_M & ... & x^{(N)}_M \end{pmatrix} \text{: concatenation of a vector of 1's with the matrix } \boldsymbol{X} & \\
+        y &= \text{: output target (regression) or label (classification)} & \\
+        N &= \text{: Number of data points in the dataset} & \\
+        M &= \text{: Number of a features in a data point} & \\
+        \boldsymbol{w} &= \begin{pmatrix}
+            w_1 \\
+            w_2 \\
+            ... \\
+            w_M \\
+        \end{pmatrix} & \\
+        \boldsymbol{w}^T &= (w_1, w_2, ..., w_M) \text{ or } (w_0, w_1, w_2, ..., w_M) \text{ $w_0$ multiplies the first entry of $\overline{\boldsymbol{x}}$ (bias)} & \\
+    \end{flalign*}
+    Note: bold symbols represents a vector
 
 \section{Introduction}
 
