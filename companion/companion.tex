@@ -149,9 +149,9 @@
         (e.g determining if an email is spam would be trained a dataset of example emails labelled as spam or not spam.) \\[0.1in] 
         Some commonly used supervised learning algorithms are:
         \begin{itemize}
-            \item k-Nearest Neighbors
-            \item Linear Regression
-            \item Logistic Regression
+            \item \hyperref[sec:KNN]{k-Nearest Neighbors}
+            \item \hyperref[sec:LinearRegression]{Linear Regression}
+            \item \hyperref[sec:LogisticRegression]{Logistic Regression}
             \item Support Vector Machines (SVMs)
             \item Decision Trees and Random Forests
             \item Neural Networks
@@ -217,14 +217,14 @@
         \end{itemize}
 
         \subsubsection{Irrelevant Features}
-        A critical part of the success of a Machine Learning project is coming up with a good set of features to train on. This process is called \textit{feature engineering}.
+        A critical part of the success of a Machine Learning project is coming up with a good set of features to train on. This process is called \hyperref[sec:FeatureEngineering]{\textit{feature engineering}}.
         \begin{itemize}
-            \item \textit{Feature selection}: Selecting the most useful features to train on among the existing features
-            \item \textit{Feature extraction}: Combining existing features to produce a more useful one (dimensionality reduction algorithms can help)
-            \item Creating new features by gathering new data.
+            \item \hyperref[sec:FeatureSelection]{\textit{Feature selection}}: Selecting the most useful features to train on among the existing features
+            \item \hyperref[sec:FeatureExtraction]{\textit{Feature extraction}}: Combining existing features to produce a more useful one (dimensionality reduction algorithms can help)
+            \item \hyperref[sec:AdhocFeatures]{\textit{Ad hoc Features}}: Creating new features by gathering new data.
         \end{itemize}
 
-    \subsection{Feature Engineering}
+    \subsection{Feature Engineering} \label{sec:FeatureEngineering}
         \subsubsection{Feature Construction}
             Features can be modified for various reasons, including to increase predictor performance and to reduce time or memory requirements.
             Below are common techniques for constructing features.
@@ -241,14 +241,14 @@
             Note that feature transformation runs the risk of discarding useful information. For example, scaling to make each feature have the same
             variance should not be done if the differing variances of the features are actually relevant to the problem.
 
-            \paragraph{Feature Extraction}
+            \paragraph{Feature Extraction} \label{sec:FeatureExtraction}
             Feature expansion involves combining multiple features into new features when first order interactions are not good enough. For example, given
             features $x_1$ and $x_2$, $x_1 \cdot x_2$ is a new feature (i.e. meta-feature) formed by an expansion of $x_1$ and $x_2$.
 
-            \paragraph{``Ad hoc'' Features}
+            \paragraph{``Ad hoc'' Features} \label{sec:AdhocFeatures}
             Constructing ad hoc features involves applying domain knowledge to introduce custom features.
 
-        \subsubsection{Feature Selection}
+        \subsubsection{Feature Selection} \label{sec:FeatureSelection}
             Irrelevant features are features that are uncorrelated with a prediction task. Redundant features are features that are highly correlated with
             one another, so using multiple redundant features does not help with predictions much more than using a single such feature.
 
@@ -274,13 +274,13 @@
             Embedded methods involve  modifying the cost function to constrain the choice of model. A common example of this is regularization, which can
             be used to penalize complex models and encourage a sparse feature set.
 
-    \subsection{Overfitting}
+    \subsection{Overfitting} \label{sec:Overfitting}
         \textit{Overfitting} is when the model performs well on the training data, but does not generalize well. Complex models can detect subtle patterns in the data,
         but if the training set is noise, or if it is too small, then the model will likely detect patterns in the noise itself. These patterns will not generalize to
         new instances. Overfitting often happens when the training data has many features, which allows for an approximation of the target function with many degrees of freedom.
         We can use regularization to constrain a model to make it simpler to reduce the risk of overfitting.
 
-    \subsection{Underfitting}
+    \subsection{Underfitting} \label{sec:Underfitting}
         \textit{Underfitting} is the opposite of overfitting: it occurs when the model is too simple to learn the underlying structure of the data. Methods of fixing the problem include:
         \begin{itemize}
             \item Select a more powerful model, with more parameters.
@@ -301,7 +301,7 @@
 \section{Evaluation of Learning}
     \subsection{Performance Formulation}
         Let $y_*$ be an output generated by a function $f$ approximating some target function. Let $y$ be the corresponding
-        output of the target function. A loss function $l(y, y_*)$ can be used to measure the accuracy of the approximation
+        output of the target function. A loss function \label{fact:LossFunction} $l(y, y_*)$ can be used to measure the accuracy of the approximation
         function $f$. Some common loss functions include:
         \begin{itemize}
             \item Squared Loss: $l(y, y_*) = (y - y_*)^2$
@@ -368,7 +368,7 @@
             $$Specificity = \frac{TN}{TN + FP}$$
 
 \section{Activation Functions}
-    \subsection{Sigmoid Function}
+    \subsection{Sigmoid Function} \label{sec:Sigmoid}
         The \textit{sigmoid function} denoted $\sigma(\cdot)$ outputs a number between 0 and 1. It is defined as
         $$ \sigma(t) = \frac{1}{1 + exp(-t)} $$
 
@@ -397,11 +397,11 @@
         The key property of the sigmoid function is that $\sigma(t) < 0.5$ when $t < 0$, and $\sigma(t) \geq 0.5$ when $t \geq 0$, so a sigmoid function is useful for classification since it can predict 1 when $\boldsymbol{w}^T\boldsymbol{x}$
         is positive and 0 if it is negative.
 
-\section{Convex Optimization}
+\section{Convex Optimization} \label{sec:ConvexOptimization}
     In machine learning we can often turn problems into convex functions and simplify the problem into finding the global minima of the function, which in essence is minimizing the training error. One of the key theorem's of a convex function is 
     that the local minimum of a convex function is also a global minimum. Therefore we can apply many methods to find parameters that satisfy the global minima.
 
-    \subsection{Normal Solution}
+    \subsection{Normal Solution} \label{sec:NormalSolution}
         To find the value of our parameter (generally $\boldsymbol{w}$) that minimizes the cost function, there is a closed-form solution. We can express this closed form solution for any convex loss function as follows.
         $$ \frac{\partial J(\boldsymbol{w})}{\partial \boldsymbol{w}} = 0 $$
         
@@ -409,7 +409,7 @@
         such a matrix is typically about $O(M^{2.4})$ to $O(M^{3})$, depending on the implementation. Some of the other approaches below are better suited for cases where there are a large number of features or too many training instances
         to fit in memory.
 
-    \subsection{Gradient Descent}
+    \subsection{Gradient Descent} \label{sec:GD}
         Gradient Descent is a generic optimization algorithm capable of finding optimal solution to a wide range of problems. The general ida is to tweak parameters iteratively in order to minimize a cost function. The main concept utilized in
         gradient descent is to measure the local gradient of the error with regard to the parameter vector and move in the direction of the descending gradient. Once the gradient is zero, you have reached the minimum.
 
@@ -458,7 +458,7 @@
             Parametric methods do most of their computation beforehand, and the summarize their results in a set of parameters. Non-parametric methods tend to
             have a shorter training time but a longer query answering time.
 
-    \subsection{K-Nearest Neighbors}
+    \subsection{K-Nearest Neighbors} \label{sec:KNN}
         K-nearest neighbors (KNN) is a common non-parametric method. The idea is to predict the value of a new point based on the values of the $K$ most similar
         (i.e. closest) points.
 
@@ -513,8 +513,8 @@
     distributions (e.g. Gaussian or Binomial) and then determine which parameters describe the available training data the best. This is known as a density estimate and we assume that each point of training data is independently selected
     from the same distribution.
 
-    \subsection{Bayesian Learning}
-    Bayes' theorem describes the probability of an event $H$ given evidence $e$.
+    \subsection{Bayesian Learning} \label{sec:BayesianLearning}
+    Bayes' theorem \label{fact:Bayes} describes the probability of an event $H$ given evidence $e$.
     \begin{align}
         P(H|e) &= \frac{P(e|H)P(H)}{P(e)} \\
         &= kP(e|H)P(H)
@@ -522,9 +522,9 @@
 
     where:
     \begin{itemize}
-        \item $P(H|e)$: Posterior probability
-        \item $P(e|P)$: Likelihood
-        \item $P(H)$: Prior probability
+        \item $P(H|e)$: Posterior probability \label{fact:Posterior}
+        \item $P(e|P)$: Likelihood \label{fact:Likelihood}
+        \item $P(H)$: Prior probability \label{fact:Prior}
         \item $P(e)/k$: Normalizing constant
     \end{itemize}
 
@@ -543,23 +543,23 @@
     Bayesian probability is:
     \begin{itemize}
         \item Optimal: give a prior probability, no prediction is correct more often than the Bayesian prediction.
-        \item Overfitting-free: all hypothesis are weighted and considered, eliminating overfitting.
+        \item Overfitting-free: all hypothesis are weighted and considered, eliminating \hyperref[sec:Overfitting]{overfitting}.
     \end{itemize}
 
     One of the constraints of bayesian learning is that it can be intractable when the hypothesis space grows very large, often as a result of approximating a continuous hypothesis space with many discrete hypothesis. This requires us to approximate 
     Bayesian Learning.
 
     \subsection{Approximate Bayesian Learning}
-    \subsubsection{Maximum a Posteriori}
+    \subsubsection{Maximum a Posteriori} \label{sec:MAP}
         Maximum a Posteriori (MAP) makes predictions based on only the most probable hypothesis $h_{MAP} = argmax_{h_i}P(h_i | e)$. This differs from Bayesian learning, which makes predictions for all hypothesis weighted by their probability. 
         MAP and Bayesian learning predictions tend to converge as the amount of data increases, and overfitting can be mitigated by giving complex hypothesis a low prior probability. However, finding $h_{MAP}$ may be difficult or intractable.
 
-    \subsubsection{Maximum Likelihood}
+    \subsubsection{Maximum Likelihood} \label{sec:ML}
         Maximum Likelihood (ML) simplifies MAP by assuming uniform prior probabilities and then makes a prediction based on the most probable hypothesis $h_{ML}$. ML tends to be less accurate than MAP and Bayesian predictions, it is also subject to overfitting
         due to the prior probabilities being uniform. Finding $h_{ML}$ is easier than finding $h_{MAP}$ since finding $h_{ML}$ for $P(e|h)$ is equivalent to calculating it for $argmax_h \sum_n logP(e_n |h)$.
 
     \subsection{Bayesian Linear Regression}
-        Instead of taking the hypothesis $\boldsymbol{w}$ that maximizes the posterior we can compute the posterior and work with that directly as follows:
+        Instead of taking the hypothesis $\boldsymbol{w}$ that maximizes the \hyperref[fact:Posterior]{posterior}, we can compute the posterior and work with that directly as follows:
         \begin{align*}
             P(\boldsymbol{w}|\boldsymbol{y}, \boldsymbol{X}) &= \frac{P(\boldsymbol{y}|\boldsymbol{w}, \boldsymbol{X})P(\boldsymbol{w}|\boldsymbol{X})}{P(\boldsymbol{y}|\boldsymbol{x})} \\
             &= ke^{-\frac{1}{2}(\boldsymbol{w}-\overline{\boldsymbol{w}})^T\boldsymbol{A}(\boldsymbol{w}-\overline{\boldsymbol{w}})} \\
@@ -583,8 +583,8 @@
 
             This gives us a gaussian distribution of the solution. Generally for the prediction we take the mean of the distribution. 
     
-    \subsection{Noisy Linear Regression}
-        Linear Regression data is often noisy and isn't distributed in a perfectly straight line. 
+    \subsection{Noisy Linear Regression} \label{sec:StatisticalLinearRegression}
+        \hyperref[sec:LinearRegression]{Linear Regression} data is often noisy and isn't distributed in a perfectly straight line. 
         $$ \boldsymbol{y} = f(\overline{\boldsymbol{X}}) + \varepsilon $$
 
         Now assuming our noise $\varepsilon$ is a Gaussian distribution (good in practice and mathematically) then we get the likelihood distribution:
@@ -594,7 +594,7 @@
         \end{align*}
         
         \subsubsection{Maximum Likelihood Solution}
-            We can apply maximum likelihood to this and find the best $\boldsymbol{w}^*$ by maximizing the likelihood of the data.
+            We can apply \hyperref[sec:ML]{maximum likelihood} to this and find the best $\boldsymbol{w}^*$ by maximizing the likelihood of the data.
             \begin{align*}
                 \boldsymbol{w^*} &= argmax_{\boldsymbol{w}} P(\boldsymbol{y}|\overline{\boldsymbol{X}}, \boldsymbol{w}, \sigma) \\
                 &= argmax_{\boldsymbol{w}} \prod_{n} e^{-\frac{(y_n - \boldsymbol{w}^T] \overline{\boldsymbol{x}}_n)^2}{2\sigma^2}} \\
@@ -605,7 +605,7 @@
             This leads us to least square problem derived in the Linear Regression section using the Mean Squared Error.
 
         \subsubsection{Maximum A Posteriori Solution}
-            Alternatively we can apply MAP to our noisy linear regression problem and find $\boldsymbol{w}^*$ with the highest posterior probability (most probable hypothesis).
+            Alternatively we can apply \hyperref[sec:MAP]{MAP} to our noisy linear regression problem and find $\boldsymbol{w}^*$ with the highest posterior probability (most probable hypothesis).
             
             Gaussian Prior:
             $$ P(\boldsymbol{w}) = N(0, \boldsymbol{\Sigma}) $$
@@ -623,10 +623,10 @@
             Let $\boldsymbol{\Sigma}^{-1} = \lambda \boldsymbol{I}$ then
             $$ \boldsymbol{w}^* = argmin_{\boldsymbol{w}} \sum_{n} (y_n - \boldsymbol{w}^T \overline{\boldsymbol{x}}_n)^2 + \lambda \|\boldsymbol{w}\|^2 $$
 
-            This is the ridge regularized least square problem that reduces overfitting.
+            This is the \hyperref[sec:RidgeReg]{ridge regularized} least square problem that reduces \hyperref[sec:Overfitting]{overfitting}.
 
     \subsection{Mixture of Gaussians}
-        Now we consider the probabilistic generative model for classification. We can compute the posterior $P(C|\boldsymbol{x})$ according to Bayes' theorem to estimate the probability of the class for a given data point. Here we are using
+        Now we consider the probabilistic generative model \label{fact:GenerativeModel} for classification. We can compute the posterior $P(C|\boldsymbol{x})$ according to \hyperref[fact:Bayes]{Bayes' theorem} to estimate the probability of the class for a given data point. Here we are using
         Bayes theorem for inference rather than for Bayesian learning (estimating parameters of a model).
         \begin{align*}
             P(C|\boldsymbol{x}) &= \frac{P(\boldsymbol{x}|C)P(C)}{\sum_C P(\boldsymbol{x}|C)P(C)} \\
@@ -635,7 +635,7 @@
 
         where:
         \begin{itemize}
-            \item $P(C)$: Prior probability of class $C$
+            \item $P(C)$: \hyperref[fact:Prior]{Prior} probability of class $C$
             \item $P(\boldsymbol{x}|C)$: class conditional distribution of $\boldsymbol{x}$
         \end{itemize}
 
@@ -651,7 +651,7 @@
 
 
         \subsubsection{Binary Classification}
-        Subbing our assumptions into Bayes theorem for binary classification and simplifying, we get the following posterior distribution for classes $c_k, c_j$.
+        Subbing our assumptions into \hyperref[fact:Bayes]{Bayes theorem} for binary classification and simplifying, we get the following posterior distribution for classes $c_k, c_j$.
         $$ P(c_k|\boldsymbol{x}) = \frac{1}{1+e^{(-\boldsymbol{w}^T\boldsymbol{x} + w_0)}} $$
 
         where:
@@ -660,7 +660,7 @@
             w_0 &= \boldsymbol{\mu}^T_k \boldsymbol{\Sigma}^{-1}\boldsymbol{\mu}_k + \frac{1}{2}\boldsymbol{\mu}^T_j\boldsymbol{\Sigma}^{-1}\boldsymbol{\mu}_j + log\frac{\pi_k}{\pi_j}
         \end{align*}
 
-        We can observe that this equation is the \hyperlink{Sigmoid Function}{logistic sigmoid} and we can draw the class boundary/linear separator at $\sigma(\boldsymbol{w}^T\boldsymbol{x} + w_0) = 0.5$ which is equivalent to $\boldsymbol{w}^T_k \overline{\boldsymbol{x}} = 0$.
+        We can observe that this equation is the \hyperref[sec:Sigmoid]{logistic sigmoid} and we can draw the class boundary/linear separator at $\sigma(\boldsymbol{w}^T\boldsymbol{x} + w_0) = 0.5$ which is equivalent to $\boldsymbol{w}^T_k \overline{\boldsymbol{x}} = 0$.
         
         \subsubsection{Multinomial Classification}
         Now similarly for a multi-class problem where all $K$ classes are a gaussian distribution we get.
@@ -669,12 +669,12 @@
         where
         $$ \boldsymbol{w}^T_k = (-\frac{1}{2}\boldsymbol{\mu}^T_k \boldsymbol{\Sigma}^{-1} \boldsymbol{\mu}_k + log(\pi_k), \boldsymbol{\mu}_k^T\boldsymbol{\Sigma}^{-1}) $$
 
-        This process can be extrapolated for classes that aren't all distributed with a gaussian distribution (e.g exponential, poisson, bernoulli etc ...). We can see that this is a specific case of the \hyperlink{Softmax Regression}{softmax distribution} which is a generalization of the sigmoid 
+        This process can be extrapolated for classes that aren't all distributed with a gaussian distribution (e.g exponential, poisson, bernoulli etc ...). We can see that this is a specific case of the \hyperref[sec:Softmax]{softmax distribution} which is a generalization of the \hyperref[sec:Sigmoid]{sigmoid} 
         and is discussed in further detail in the next section.
 
         \subsubsection{Parameter Estimation}
             Let $\pi = P(y = C_1)$ and $1 - \pi=P(y = C_2)$ where $P(\boldsymbol{x}|C_1)=N(\boldsymbol{x}|\boldsymbol{\mu}_1, \boldsymbol{\Sigma})$ and $P(\boldsymbol{x}|C_2) = N(\boldsymbol{x}|\boldsymbol{\mu}_2, \boldsymbol{\Sigma})$. In order to actually use bayesian inference to get the classification probability of our input data, we need to learn the parameters $\pi$, $\boldsymbol{\mu}_1$, $\boldsymbol{\mu}_2$ and $\boldsymbol{\Sigma}$. 
-            We can estimate the parameters by maximum likelihood, maximum a posteriori or bayesian learning. This example will demonstrate using maximum likelihood to learn these parameters.
+            We can estimate the parameters by \hyperref[sec:ML]{maximum likelihood}, maximum a posteriori or bayesian learning. This example will demonstrate using maximum likelihood to learn these parameters.
 
             We can express the Likelihood of our training set as $L(\boldsymbol{X},\boldsymbol{y}) = P(\boldsymbol{X},\boldsymbol{y}|\pi,\boldsymbol{\mu}_1,\boldsymbol{\mu}_2,\boldsymbol{\Sigma})$. We want to maximize the likelihood in order to use Bayes inference.
             $$ L(\boldsymbol{X},\boldsymbol{y}) = \prod_{n}{[\pi|\boldsymbol{\mu}_1, \boldsymbol{\Sigma}]^{y_n}[(1-\pi)|N(\boldsymbol{x}_n|\boldsymbol{\mu}_2,\boldsymbol{\Sigma})]^{1-y_n}} $$
@@ -711,7 +711,7 @@
 
         
 \section{Linear Models}
-    \subsection{Linear Regression}
+    \subsection{Linear Regression} \label{sec:LinearRegression}
     \subsubsection{Formulation}
         Linear Regression is a supervised machine learning algorithm where the predicted output is continuous and has a constant slope. Our main objective is to generate a line that
         minimizes the distance from the line to all of data points. This is essentially minimizing the error and maximizing our prediction accuracy.
@@ -731,29 +731,29 @@
 
     \subsubsection{Cost Function}
         To predict based on a dataset we first need to learn the weights that minimize the mean squared error (euclidean loss) of our hypothesis. We can define the following to be our cost function to
-        minimize with $N$ being the number of data points and $n$ being the $n^{th}$ training example. This can also be proven by applying \hyperlink{Maximum Likelihood}{maximum likelihood} with
-        gaussian noise. Similarly we can come up with the regularized least square problem by applying \hyperlink{Maximum a Posteriori}{maximum a posteriori} on noisy linear regression.
+        minimize with $N$ being the number of data points and $n$ being the $n^{th}$ training example. This can be proven with \hyperref[sec:StatisticalLinearRegression]{statistical linear regression}.
         $$ J(\boldsymbol{w}) = \frac{1}{2N}\sum_{n=1}^{N}(h_{\boldsymbol{w}}(\overline{\boldsymbol{x}}_n) - y_n)^2 $$
 
     \subsubsection{Gradient Descent Solution}
-        Now to solve for $\boldsymbol{w}$ we can use Gradient Descent and iteratively update $\boldsymbol{w}$ until it converges. We get the slope of the cost function to be:
+        Now to solve for $\boldsymbol{w}$ we can use \hyperref[sec:GD]{Gradient Descent} and iteratively update $\boldsymbol{w}$ until it converges. We get the slope of the cost function to be:
         $$ \frac{\partial J{\boldsymbol{w}}}{\partial \boldsymbol{w}_j} = \frac{1}{N}\sum_{n=1}^N(\boldsymbol{w}^T\overline{\boldsymbol{x}}_n-y_n)x_{j,n} $$
         now applying a step $\alpha$ we can iteratively change $\boldsymbol{w}$ until it reaches the global minima. 
         $$ \boldsymbol{w}_j := \boldsymbol{w}_j - \alpha \frac{1}{N}\sum_{n=1}^{N}(h_{\boldsymbol{w}}(\overline{\boldsymbol{x}}_n) - y_n) $$
 
     \subsubsection{Normal Equation Solution}
-        The closed form solution to the linear system in $\boldsymbol{w}$
+        The \hyperref[sec:NormalSolution]{closed form solution} to the linear system in $\boldsymbol{w}$
         $$ \frac{\partial J{\boldsymbol{w}}}{\partial \boldsymbol{w}_j} = \frac{1}{N}\sum_{n=1}^N(\boldsymbol{w}^T\overline{\boldsymbol{x}}_n-y_n)x_{j,n} $$
         writing this as a linear system in $w$ we get $A\boldsymbol{w} = b$ where
         $$ A = \sum_{n=1}^N(\boldsymbol{x}_n \boldsymbol{x}_n^T) \ \textrm{and} \ b = \sum_{n=1}^N(\boldsymbol{x}_n y_n) $$
         so we can solve for $\boldsymbol{w} = \boldsymbol{A}^{-1}\boldsymbol{b}$ and get the following vectorized solution.
         $$ \boldsymbol{w} = (\boldsymbol{X}^T\boldsymbol{X})^{-1} \boldsymbol{X}^T\boldsymbol{y} $$
     
-    \subsection{Logistic Regression}
+    \subsection{Logistic Regression} \label{sec:LogisticRegression}
         \subsubsection{Formulation}
             Logistic regression is an algorithm used for classification. It is used to estimate the probability that an instance belongs to a particular class. If the estimated probability is
-            greater than 50\%, then the model predicts the instance belongs to that class, and otherwise it predicts it does not. Logistic Regression is form of discriminative learning as it attempts 
-            to model $P(c_k|\boldsymbol{x})$ directly, this is unlike generative learning where $P(c_k)$ and $P(\boldsymbol{x}|c_k)$ are found by max likelihood and $P(c_k|\boldsymbol{x})$ by Bayesian Inference.
+            greater than 50\%, then the model predicts the instance belongs to that class, and otherwise it predicts it does not. Logistic Regression is form of discriminative learning \label{fact:DiscriminativeModel} as it attempts 
+            to model $P(c_k|\boldsymbol{x})$ directly, this is unlike the \hyperref[fact:GenerativeModel]{generative model} where $P(c_k)$ and $P(\boldsymbol{x}|c_k)$ are found by \hyperref[sec:ML]{max likelihood}
+            and $P(c_k|\boldsymbol{x})$ by Bayesian Inference.
 
         \subsubsection{Prediction}
             Logistic Regression computers the weighted sum of the input features (plus a bias term) and outputs the logistic (\hyperlink{sigmoid function}{Sigmoid Function}) of the result. The hypothesis for class $k$ is given by
@@ -782,13 +782,11 @@
             will be close to 0 if the estimated probability is close to 0 for a negative instance or close to 1 for a positive instance.
 
             We can express the cost as a single expression called the \textit{log loss}. 
-
             $$J(\boldsymbol{w}) = -\frac{1}{N}\sum_{n=1}^N[y_n log(h_{\boldsymbol{w}}(\overline{\boldsymbol{x}}_n)) + ((1-y_n)log(1-h_{\boldsymbol{w}}(\overline{\boldsymbol{x}}_n))] $$
 
         \subsubsection{Solution}
-            Unfortunately, there is no known closed-form solution to compute the value of $\boldsymbol{w}$ that minimizes the cost function. The cost function however, is convex, so Gradient Descent or 
-            any other optimization algorithm is guaranteed to find the global minimum. The gradient can be expressed as:
-
+            Unfortunately, there is no known closed-form solution to compute the value of $\boldsymbol{w}$ that minimizes the cost function. The cost function however, is convex, so \hyperref[sec:GD]{Gradient Descent} or 
+            any other \hyperref[sec:ConvexOptimization]{convex optimization} algorithm is guaranteed to find the global minimum. The gradient can be expressed as:
             $$ \frac{\partial J{\boldsymbol{w}}}{\partial \boldsymbol{w}_j} = \frac{1}{N}\sum_{n=1}^N(\sigma(\boldsymbol{w}^T\overline{\boldsymbol{x}}) - y_n) x_{j,n}) $$
             
             Some faster more sophisticated methods are
@@ -798,15 +796,13 @@
                 \item L-BFGS
             \end{itemize}
 
-        \subsubsection{Softmax Regression}
+        \subsubsection{Softmax Regression} \label{sec:Softmax}
             The Logistic Regression model can be generalized to support multiple classes. When given an instance $\boldsymbol{x}$, the Softmax Regression model computes a score $f_k(\boldsymbol{x})$ for each class $k$,
             then estimates the probability of each class by applying the \textit{softmax function} to the scores. 
-
             $$ f_k(\boldsymbol{x}) = \boldsymbol{w}^T_k \overline{\boldsymbol{x}} $$
 
             Once the score of every class for the instance $\boldsymbol{x}$ is computed, you can estimate the probability $\pi_k$ that the instance belongs to class $k$. The function computes the exponential of each score, 
             the normalizes them.
-
             $$ \pi_k = P(y_n = k | \boldsymbol{x}_n, \boldsymbol{w}) = \frac{e^{f_k(\boldsymbol{x})}}{\sum_{j=1}^K e^{f_j(\boldsymbol{x})}} $$
 
             The Softmax Regression classifier predicts the class with the highest estimated probability.
@@ -817,7 +813,6 @@
             where $y_n == k$ is the target probability the $n^{th}$ instance belongs to class $k$ and $\pi_{k}^{(n)}$ is the estimated probability that instance $\boldsymbol{x}_n$ belongs to class $k$.
 
             The gradient vector is
-
             $$ \nabla_{\boldsymbol{w}_k} J(\boldsymbol{w}) = \frac{1}{N}\sum_{n=1}^N(\pi^{(n)}_k - (y_n == k))\boldsymbol{x}_n $$
 
             that can be paired with an optimization algorithm to solve.
@@ -826,14 +821,14 @@
         Often times our data won't be linear and it could be of a higher degree polynomial or a completely different distribution altogether. We can turn this non-linear problem into 
         a linear regression problem by mapping the data to a different vector space using a basis function.
 
-        To demonstrate, let us consider Linear Regression on a nonlinear N x 1 (feature) dataset. Let $\phi$ denote the polynomial basis function where
+        To demonstrate, let us consider \hyperref[sec:LinearRegression]{Linear Regression} on a nonlinear $M$ x 1 (feature) dataset. Let $\phi$ denote the polynomial basis function where
         $\phi_j(\boldsymbol{x}) = x^j$. Then we can express our hypothesis as: 
-        $$ h_{\boldsymbol{w}}(\boldsymbol{x}) = w_0\phi(x) + w_1\phi_1(x) + w_2\phi_2(x) + ... + w_3\phi_3(x) $$
+        $$ h_{\boldsymbol{w}}(\boldsymbol{x}) = w_0\phi(x) + w_1\phi_1(x) + w_2\phi_2(x) + ... + w_m\phi_m(x) $$
 
         A dataset with 3 features with a polynomial basis would have a hypothesis as such
         $$ h_{\boldsymbol{w}}(\boldsymbol{x}) = w_0 + w_1x_1 + w_2x_2 + w_3x_1^2 + w_4x_2^2 + w_5x_1^2x_2 + w_6x_1x_2^2 + w_7x_1^2x_2^2 + w_8x_1^3 + w_9x_2^3 $$
 
-        This can then be extrapolated to logistic regression and n-features. Some commonly used basis functions are:
+        This can then be extrapolated to \hyperref[sec:LogisticRegression]{logisitic regression} and m-features. Some commonly used basis functions are:
 
         \begin{itemize}
             \item Polynomial: $\phi_j(\boldsymbol{x}) = x^j$
@@ -842,13 +837,13 @@
             \item Fourier Basis, Wavelets, etc ...
         \end{itemize}
 
-    \subsection{Regularization}
-        Small outliers can drastically change our values of $\boldsymbol{w}$ so rely on regularization to reduce overfitting. Polynomial models can be easily regularized
+    \subsection{Regularization} \label{sec:Regularization}
+        Small outliers can drastically change our values of $\boldsymbol{w}$ so rely on regularization to reduce \hyperref[sec:Overfitting]{overfitting}. Polynomial models can be easily regularized
         by reducing the number of polynomial degrees. For a linear model, regularization is typically achieved by constraining the weights of the model. The regularization term should only
         be added to the cost function during training. Once the model is trained, the non-regularized cost should be used to measure the model's performance. The bias term $w_0$ is not regularized.
 
-        \subsubsection{Ridge Regression}
-            Ridge Regression (Tikhonov Regularization) is a regularized version of Linear regression with a regularization term of $\frac{\lambda}{2}\|w\|_2^2$ ($l_2$-norm) added to the cost function.
+        \subsubsection{Ridge Regression} \label{sec:RidgeReg}
+            Ridge Regression (Tikhonov Regularization) is a regularized version of Linear regression with a regularization term of $\frac{\lambda}{2}\|\boldsymbol{w}\|_2^2$ ($l_2$-norm) added to the cost function.
             This forces the learning algorithm to fit the data but also keep the model weights as small as possible. The hyperparameter $\lambda$ controls how much you want to regularize the model.
             $$ J(\boldsymbol{w}) = ERROR(\boldsymbol{w}) + \frac{\lambda}{2}\|\boldsymbol{w}\|^2_2 $$
 
@@ -857,7 +852,7 @@
             but uses the $l_1$ norm of the weight vector instead of half the square of the $l_2$ norm.
             $$ J(\boldsymbol{w}) = ERROR(\boldsymbol{w}) + \lambda\sum_{i=1}^n|\boldsymbol{w}_i| $$
             An important characteristic of Lasso Regression is that it tends to eliminate the weights of the least important features (i.e, set them to zero). Lasso Regression automatically performs 
-            feature selection and outputs a \textit{sparse model}.
+            \hyperref[sec:FeatureSelection]{feature selection} and outputs a \textit{sparse model}.
 
         \subsubsection{Elastic Net}
             Elastic Net is a middle ground between Ridge Regression and Lasso Regression. The regularization term is a simple mix of both Ridge and Lasso's regularization terms and you can control the mix
@@ -865,7 +860,7 @@
             $$ J(\boldsymbol{w}) = ERROR(\boldsymbol{w}) + \frac{(1-r)\lambda}{2}\|\boldsymbol{w}\|^2_2 +  r\lambda\sum_{i=1}^n|\boldsymbol{w}_i| $$
         
         \subsubsection{Early Stopping}
-            Early Stopping is a different way to regularize iterative learning algorithms such as Gradient Descent. This method aims to stop training as soon as the validation error reaches a minimum. For all
+            Early Stopping is a different way to regularize iterative learning algorithms such as \hyperref[sec:GD]{Gradient Descent}. This method aims to stop training as soon as the validation error reaches a minimum. For all
             convex optimization problems there will be a global minima, once that global minima is reached the curve will start going up. This proposes to stop as soong as we reach the minimum.
 
 \printindex
