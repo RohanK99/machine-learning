@@ -10,11 +10,14 @@
 \usepackage[makeindex]{imakeidx}
 \usepackage{titlesec}
 \usepackage{textcomp}
+\usepackage{graphicx}
 \usepackage{gensymb}
 \usepackage{xcolor, soul}
 \usepackage{hyperref}
 \usepackage{pgfplots}
 \usepackage{parskip}
+
+\graphicspath{ {./images/} }
 
 \definecolor{linkColour}{RGB}{140, 25, 57}
 \definecolor{urlColour}{RGB}{137, 62, 27}
@@ -627,7 +630,7 @@
             being uniform. Finding $h_{ML}$ is easier than finding $h_{MAP}$ since finding $h_{ML}$ for $P(e|h)$ is
             equivalent to calculating it for $argmax_h \sum_n logP(e_n |h)$.
 
-    \subsection{Bayesian Linear Regression}
+    \subsection{Bayesian Linear Regression} \label{sec:BayesianLinearRegression}
         Instead of taking the hypothesis $\boldsymbol{w}$ that maximizes the \hyperref[fact:Posterior]{posterior}, we
         can compute the posterior and work with that directly as follows:
         \begin{align*}
@@ -1005,7 +1008,59 @@
             \hyperref[sec:GD]{Gradient Descent}. This method aims to stop training as soon as the validation error
             reaches a minimum. For all convex optimization problems there will be a global minima, once that global
             minima is reached the curve will start going up. This proposes to stop as soong as we reach the minimum.
+
+\section{Kernel Methods}    
+    \subsection{Kernel Trick}
+        \subsubsection{Formulation}
+            When we consider generalized linear models we have to come up with some basis functions, our hypothesis
+            space is limited because we have fixed basis functions. To have a non-limited hypothesis space we need to be
+            able to consider an infinite number of basis functions. Using kernel trick we can change the complexity of
+            the problem to depend on the number of data rather than the number of basis functions.
+
+            Examples:
+            \begin{itemize}
+                \item \hyperref[sec:GaussianProcesses]{Gaussian Processes}
+                \item \hyperref[sec:SVM]{Support Vector Machine}
+            \end{itemize}
         
+        \subsubsection{Dual Problem}
+            Given a constrained optimization problem, known as the \textit{primal problem}\label{fact:PrimalProblem}, it
+            is possible to express a different but closely related problem, called its \textit{dual
+            problem}\label{fact:DualProblem}. The dual problem is generally achieved by constraint based optimization
+            (e.g taking the lagrangian and representing the problem as an optimization in other simpler variables). The
+            solution to the dual problem typically gives a lower bound to the solution of the primal problem, but under
+            some conditions it can have the same solution as the primal problem. The complexity of the primal solution
+            depends on the number of basis functions while the complexity of the dual problem depends on the number of
+            data points.
+        
+        \subsubsection{Kernel Function}
+            Let $\phi(\boldsymbol{x})$ be a set of basis functions that map inputs $x$ to a feature space. In many cases
+            this feature space only appears in the dot product $\phi(\boldsymbol{x})^T \phi(\boldsymbol{x}')$ of input
+            pairs $\boldsymbol{x}, \boldsymbol{x}'$, therefore we can define the kernel function
+            $$ k(\boldsymbol{x}, \boldsymbol{x}') = \phi(\boldsymbol{x})^T \phi(\boldsymbol{x}') $$
+            to be the dot product of any pair  $\boldsymbol{x}, \boldsymbol{x}'$ in feature space. Now we only need to
+            know $k(\boldsymbol{x}, \boldsymbol{x}')$, not $\phi(\boldsymbol{x})$. If we know $k(\boldsymbol{x},
+            \boldsymbol{x}')$ then we know the output to any input $\boldsymbol{x}, \boldsymbol{x}'$ without having to
+            compute $\phi(\boldsymbol{x})$. Intuitively a kernel is a measure of the similarity of the input.
+
+        \subsubsection{Constructing Kernels}
+            Two main methods:
+            \begin{itemize}
+                \item Find mapping $\boldsymbol{\phi}$ to feature space and let $\boldsymbol{K = \phi^T \phi}$
+                \item Directly specify $K$
+            \end{itemize}
+
+            A valid kernel must be a positive semi-definite. This means that $k$ must factor into the product of a
+            transposed matrix by itself (e.g., $\boldsymbol{K = \phi^T \phi}$) or, all eigenvalues must be greater than
+            or equal to 0.
+            
+        \subsubsection{Common Kernels}
+            \begin{itemize}
+                \item Linear/Identity: $k(\boldsymbol{x}, \boldsymbol{x}') = \boldsymbol{x}^T\boldsymbol{x}'$
+                \item Polynomial: $k(\boldsymbol{x}, \boldsymbol{x}') = (\boldsymbol{x}^T\boldsymbol{x}' + 1)^d$
+                \item Gaussian RBF: $k(\boldsymbol{x}, \boldsymbol{x}') = exp(-\gamma \|\boldsymbol{x} - \boldsymbol{x}'\|^2)$
+                \item Sigmoid Kernel: $k(\boldsymbol{x}, \boldsymbol{x}') = tanh(\alpha \boldsymbol{x}^T\boldsymbol{x}' + c)$
+            \end{itemize}
 \printindex
 
 \end{document}
