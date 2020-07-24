@@ -1061,6 +1061,58 @@
                 \item Gaussian RBF: $k(\boldsymbol{x}, \boldsymbol{x}') = exp(-\gamma \|\boldsymbol{x} - \boldsymbol{x}'\|^2)$
                 \item Sigmoid Kernel: $k(\boldsymbol{x}, \boldsymbol{x}') = tanh(\alpha \boldsymbol{x}^T\boldsymbol{x}' + c)$
             \end{itemize}
+
+    \subsection{Gaussian Processes} \label{sec:GaussianProcesses}
+        The idea behind Gaussian processes is that given a dataset it is able to capture any function that happens to be
+        going through those points. It is does not assume any parametric form for the underlying data. The gaussian
+        process essentially learns a distribution over what is the outcome of that function at any point. Between two
+        points in the dataset it does not know what the function should look like, so it models the uncertainty of the
+        prediction with a distribution between the data points, the bounds being + and - some multiple of standard deviation.
+        \begin{center}
+            \includegraphics{gaussian_process}
+        \end{center}
+
+        \subsubsection{Function Space}
+            In \hyperref[sec:BayesianLinearRegression]{Bayesian Linear Regression} we saw that it was a parametric form
+            of learning the weight $\boldsymbol{w}$. Now instead we can consider the function space view were we can
+            instead directly learn the function $f(\boldsymbol{x}) = \boldsymbol{w}^T\phi(\boldsymbol{x})$. We can
+            express this function space view as:
+
+            \begin{itemize}
+                \item Prior: $P(f(\boldsymbol{x}_*)) = \int_{\boldsymbol{w}} P(f|\boldsymbol{w}, \boldsymbol{x}_*) P(\boldsymbol{w}))d\boldsymbol{w}$
+                \item Posterior: $P(f(\boldsymbol{x}_*)|\boldsymbol{X}, \boldsymbol{y}) = \int_{\boldsymbol{w}}
+                P(f|\boldsymbol{w}, \boldsymbol{x}_*) P(\boldsymbol{w}|\boldsymbol{X}, \boldsymbol{y})d\boldsymbol{w}$
+            \end{itemize}
+
+            According to every function view, there is a Gaussian at $f(\boldsymbol{x}_*)$ for every $\boldsymbol{x}_*$.
+            Those Gaussians are correlated through $\boldsymbol{w}$.
+            
+        \subsubsection{Representation}
+            We can represent a Gaussian Process, a distribution over functions as:
+            $$ f(\boldsymbol{x}) \sim GP(m(\boldsymbol{x}), k(\boldsymbol{x}, \boldsymbol{x}')) \forall \boldsymbol{x},
+            \boldsymbol{x}' $$
+
+            where $ m(\boldsymbol{x}) = E(f(\boldsymbol{x})) $ is the mean and $k(\boldsymbol{x}, \boldsymbol{x}') =
+            E((f(\boldsymbol{x} - m(\boldsymbol{x})))(f(\boldsymbol{x}')-m(\boldsymbol{x}')))$ is the kernel covariance
+            matrix.
+        
+        \subsubsection{Gaussian Process Regression}
+            The gaussian process regression is the kernel version of \hyperref[sec:BayesianLinearRegression]{Bayesian
+            Linear Regression} where we learn based on the function space view, computing the posterior over $f$ rather
+            than over $w$. This allows for the complexity to be cubic in the number of training points rather than the
+            number of features. We can perform regression using the following formulae.
+
+            Prior: $P(f(\cdot)) = N(m(\cdot),k(\cdot,\cdot))$
+            
+            Likelihood: $P(\boldsymbol{y}|\boldsymbol{X},f) = N(f(\cdot), \sigma^2 \boldsymbol{I})$
+
+            Posterior: $P(f(\cdot)|\boldsymbol{X},\boldsymbol{y}) = N(\overline{f}(\cdot), k'(\cdot, \cdot))$ where \\
+            $\overline{f}(\cdot) = k(\cdot,\boldsymbol{X})(\boldsymbol{K}+\sigma^2\boldsymbol{I})^{-1}\boldsymbol{y}$ and \\
+            $k'(\cdot,\cdot)=k(\cdot,\cdot)-k(\cdot,\boldsymbol{X})(\boldsymbol{K}+\sigma^2\boldsymbol{I})^{-1}k(\boldsymbol{X},\cdot)$
+            
+            Prediction: $P(\boldsymbol{y}_*|\boldsymbol{x}_*, \boldsymbol{X}, \boldsymbol{y}) = N(\overline{f}(\boldsymbol{x}_*), k'(\boldsymbol{x}_*, \boldsymbol{x}_*))$
+
+
 \printindex
 
 \end{document}
