@@ -1112,6 +1112,130 @@
             
             Prediction: $P(\boldsymbol{y}_*|\boldsymbol{x}_*, \boldsymbol{X}, \boldsymbol{y}) = N(\overline{f}(\boldsymbol{x}_*), k'(\boldsymbol{x}_*, \boldsymbol{x}_*))$
 
+    \subsection{Support Vector Machines} \label{sec:SVM}
+            Support Vector Machines is a kernel based method that can be used for classification and regression. It
+            performs extremely well for small amounts of data and can even beat out Neural Networks. 
+            \vspace{1em}
+            \begin{center}
+                \includegraphics[scale=0.35]{SVM}
+            \end{center}
+        
+        \subsubsection{Max-Margin Classifier}
+            Max-Margin classifier is generally only used for binary classification where the data is linearly
+            separable. The intuition behind the max-margin classifier is that we want to find a linear separator for
+            the data that maximizes the distance to the closest data points. We formulate this method as we need to
+            consider noise, a larger margin will allow room for noise, otherwise if it is too narrow then there is
+            room for possible misclassification.
+
+            We can turn the problem into an optimization problem of finding the max margin as follows.
+
+            Linear Separator: $\boldsymbol{w}^T\phi(\boldsymbol{x}) = 0$.
+
+            Distance to Linear Separator:
+            $$ \frac{y\boldsymbol{w}^T\phi(x)}{\|\boldsymbol{w}\|}, y \in \{-1, 1\} $$
+
+            Maximum Margin:
+            $$ max_{\boldsymbol{w}} \frac{1}{\|\boldsymbol{w}\|} \{min_n y_n
+            \boldsymbol{w}^T\phi(\boldsymbol{x}_n)\} $$
+
+            We can transform this expression by fixing the minimal distance to 1 and minimizing our scale
+            $\|\boldsymbol{w}\|$ to be:
+
+            $$ min_w \frac{1}{2} \|\boldsymbol{w}\|^2 \ \ \text{s.t.} \  y_n \boldsymbol{w}^T\phi(\boldsymbol{x}_n)
+            \geq 1 \ \forall n $$
+
+            This now becomes a convex quadratic optimization problem with linear constraints, which is a form of
+            that is quite easy. The points where $y_n \boldsymbol{w}^T\phi(\boldsymbol{x}_n) = 1$ define the active
+            constraints, called the support vectors.
+
+            \paragraph{Dual Representation}
+                To compute this problem we want to reformulate such that $\phi(\boldsymbol{x})$ only appears in a
+                kernel. From the kernel trick we see we can achieve this by finding the dual of the optimization.
+                This will result in a sparse kernel since only the points on the margin matter.
+
+                We want to transform the constrained optimization problem
+                $$ min_w \frac{1}{2} \|\boldsymbol{w}\|^2 \ \ \text{s.t.} \  y_n
+                \boldsymbol{w}^T\phi(\boldsymbol{x}_n) \geq 1 \ \forall n $$
+
+                into an unconstrained optimization problem. We can use the lagrangian to obtain the following.
+                $$ max_{a \geq 0} \ min_{\boldsymbol{w}} L(\boldsymbol{w}, \boldsymbol{a}) $$
+                where
+                $$ L(\boldsymbol{w}, \boldsymbol{a}) = \frac{1}{2} \| \boldsymbol{w} \|^2 - \sum_n a_n[y_n
+                \boldsymbol{w}^T \phi(\boldsymbol{x}_n) - 1] $$
+                where the second term is the penalty for violating the $n^th$ constraint.
+
+                We can then solve the inner minimization $min_{\boldsymbol{w}}L(\boldsymbol{w}, \boldsymbol{a})$ to
+                obtain:
+                $$L(\boldsymbol{a}) = \sum_n a_n - \frac{1}{2}\sum_n \sum_n a_n a_n, y_n y_n, k(\boldsymbol{x}_n, \boldsymbol{x}_n)$$
+
+                We are then left with the optimization problem in $\boldsymbol{a}$ only known as the dual problem.
+                $$ max_{\boldsymbol{a}}L(\boldsymbol{a}) \ \text{s.t.} \ a_n \geq 0 $$
+                This is sparse optimization since many of the $a_n$'s are 0 when the data point is already $\geq 1$,
+                so the penalty is 0 for theses since they already satisfy the constraint.
+                
+            \paragraph{Classification}
+                Primal Problem:
+                $$ y_* = sgn(\boldsymbol{w}^T\phi(\boldsymbol{x}_*)) $$
+
+                Dual Problem:
+                \begin{align*}
+                y_* &= sgn(\sum_n a_ny_n\phi(\boldsymbol{x}_n)^T\phi(\boldsymbol{x}_*)) \\
+                y_* &= sgn(\sum_n a_ny_n k(\boldsymbol{x}_n, \boldsymbol{x}_*))
+                \end{align*}
+                
+                Intuitively what is happening here is we are taking the sum of the degree of similarity between each
+                query point and every point in the training set that is a support vector.
+            
+        \subsubsection{Soft Margin Classifier}
+            Often times the data is not linearly separable and we have overlapping class distributions. We want a method
+            such that we can relax the constraints yet keep the maximum margin as maximizing the margin is equivalent to
+            minimizing an upper bound on the worst case loss. To achieve this we introduce Soft Margins which formulates
+            that we can relax the constraints by introducing a slack variable $\xi \geq 0$. We can now impose the
+            following constraint.
+            $$ y_n \boldsymbol{w}^T\phi(\boldsymbol{x}_n) \geq 1 - \xi_n \ \forall n $$
+
+            This introduces a new optimization problem
+            $$ min_{\boldsymbol{w}, \boldsymbol{\xi}} \ C \sum_{n=1}^N \xi_n + \frac{1}{2} \| \boldsymbol{w} \|^2
+            \quad \textrm{s.t.} \ y_n \boldsymbol{w}^T \phi(\boldsymbol{x}_n) \geq 1 - \xi_n, \ \xi_n \geq 0 \ \forall n
+            $$
+            
+            $C > 0$ controls the tradeoff between the slack variable penalty and the margin. 
+            
+            
+            Some intuition behind this is further explored. 
+            \begin{itemize}
+                \item Since $\sum_n \xi_n$ is an upper bound on the number of 
+                misclassifications, $C$ can also be thought as a regularized coefficient that controls the tradeoff between 
+                error minimization and model complexity
+                \item We can see that if we let $C \rightarrow \infty$ then we recover the
+                original hard margin problem.
+                \item Soft margins can only handle minor misclassifications and are still sensitive 
+                to outliers.
+            \end{itemize}        
+        
+        
+        \subsubsection{Multiclass SVM}
+            There are many approaches to train multi class SVM's the best one being the continuous ranking approach. The
+            idea behind this, is that instead of computing the sign of a linear separator, we compare the values of linear
+            functions for each class $k$. The SVM returns a continuous value to rank all classes.
+
+            \paragraph{Constraint}
+            Now for each class $k \neq y$ we define a linear constraint that guarantees a margin of at least 1 between classes.
+            $$ \boldsymbol{w}^T_y \phi(\boldsymbol{x}) - \boldsymbol{w}^T_k\phi(\boldsymbol{x}) \geq 1 \ \forall k \neq
+            y $$
+
+            \paragraph{Classification}
+            With the constraint we can achieve the optimization problem used for classification. For multiclass dataset
+            that is linearly separable we get:
+
+            $$ min_{\boldsymbol{w}} \frac{1}{2} \sum_k \|\boldsymbol{w}_k \|^2 \quad \textrm{s.t.} \
+            \boldsymbol{w}^T_{y_n} \phi(\boldsymbol{x_n}) - \boldsymbol{w}^T_k \phi(\boldsymbol{x}_n) \geq 1 \ 
+            \forall n,k \neq y_n $$
+
+            For overlapping classes we can add the slack variable $\xi$
+            $$ min_{\boldsymbol{w}, \boldsymbol{\xi}} \ C \sum_n \xi_n + \frac{1}{2} \sum_k \|\boldsymbol{w}_k \|^2 \quad \textrm{s.t.} \
+            \boldsymbol{w}^T_{y_n} \phi(\boldsymbol{x_n}) - \boldsymbol{w}^T_k \phi(\boldsymbol{x}_n) \geq 1 - \xi_n \ 
+            \forall n,k \neq y_n $$
 
 \printindex
 
