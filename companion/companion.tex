@@ -400,7 +400,45 @@
             positives, and is measured as:
             $$Specificity = \frac{TN}{TN + FP}$$
 
-\section{Activation Functions}
+\section{Activation Functions} \label{sec:ActivationFunction}
+    \subsection{Threshold} \label{sec:Threshold}
+        The \textit{threshold function} denoted $heaviside(\cdot)$ outputs a number 0 or 1 based on its input $z$. It is defined as a piecewise function
+        \[
+            heaviside(z) = 
+            \begin{cases}
+                0 & \text{if $z < 0$} \\
+                1 & \text{if $z \geq 0$}
+            \end{cases}
+        \]
+
+        \begin{tikzpicture}
+            \begin{axis}
+            [%
+                axis line style = thick, grid=major, xmin=-7.5, xmax=7.5, ytick={0,.5,1}, width = \linewidth, height =
+                5cm]
+                \addplot%
+                [
+                    blue,%
+                    mark=none,
+                    samples=100,
+                    domain=-7.5:0,
+                ]
+                {0};
+
+                \addplot%
+                [
+                    blue,%
+                    mark=none,
+                    samples=100,
+                    domain=0:7.5,
+                ]
+                {1};
+            \end{axis}
+        \end{tikzpicture}
+
+        The key property of the threshold function is that it will predict $1$ when $z$, which will generally be our
+        prediction $\boldsymbol{w}^T\boldsymbol{x}$, is greater than $0$ else it will predict $0$.
+
     \subsection{Sigmoid Function} \label{sec:Sigmoid}
         The \textit{sigmoid function} denoted $\sigma(\cdot)$ outputs a number between 0 and 1. It is defined as
         $$ \sigma(t) = \frac{1}{1 + exp(-t)} $$
@@ -1236,6 +1274,108 @@
             $$ min_{\boldsymbol{w}, \boldsymbol{\xi}} \ C \sum_n \xi_n + \frac{1}{2} \sum_k \|\boldsymbol{w}_k \|^2 \quad \textrm{s.t.} \
             \boldsymbol{w}^T_{y_n} \phi(\boldsymbol{x_n}) - \boldsymbol{w}^T_k \phi(\boldsymbol{x}_n) \geq 1 - \xi_n \ 
             \forall n,k \neq y_n $$
+
+\section{Artificial Neural Networks Primer}
+    \subsection{Origins}
+        The concept of a Artificial Neural Network (ANN) stems from the anatomy of the brain. They are modelled directly
+        after biological neurons, a neural cell, found in the brain. Biological neurons produce short electrical
+        impulses called \textit{action potentials} which travel along the neurons and make synapses release chemical
+        signals called \textit{neurotransmitters}. When a neuron receives a sufficient amount of these neurotransmitters
+        within a few milliseconds, it fires its own electrical impulses. These, individual neurons behave in a simple
+        way but they are organized in a vast network of billions, with each neuron typically connect to thousands of
+        other neurons. Highly complex computations can be performed by a network of fairly simple neurons.
+
+    \subsection{ANN Unit}
+        Now the idea behind Artificial Neural Networks is to mimic the brain by making Artificial Neurons. The
+        Perceptron is one of the simplest ANN architectures and is based on a slightly different artificial neuron
+        called a \textit{threshold logic unit} (TLU), or sometimes a \textit{linear threshold unit} (LTU). The TLU
+        computes a weighted sum of its inputs ($a = w_1x_1 + w_2x_2 + ... + w_nx_n = \boldsymbol{w}^T\boldsymbol{x}$),
+        then applies an \hyperref[sec:ActivationFunction]{activation function} to that sum and outputs the result:
+        $h_{\boldsymbol{w}}(a)$. When picking an activation function, it should be nonlinear, otherwise the network is
+        just a linear function. The activation function should be chosen such that it mimics firing in neurons: the unit
+        should be "active" (output near 1) when fed with the "right" inputs and the unit should be "inactive" (output
+        near 0) when fed with the wrong inputs.
+
+    \subsection{Perceptron}
+        A perceptron is a type of single layer feed-forward network. It is simply composed of a single layer of threshold logic units, with each TLU connected to all the
+        inputs. When all the neurons in a layer are connected to every neuron in the previous later, the layer is called
+        a \textit{fully connected layer}, or a \textit{dense layer}. The inputs of the perceptron are fed to special
+        pass through neurons called input neurons: they output whatever input they are fed. All the input neurons form
+        the \textit{input layer}. Moreover, an extra bias feature is generally added ($x_0 = 1$): it is typically
+        represented using a special type of neuron called a \textit{bias neuron}, which outputs 1 all the time.
+        
+        \subsubsection{Threshold Perceptron Learning}
+            \paragraph{Threshold Perceptron Algorithm}
+                For threshold perceptron algorithm, learning is done separately for each unit $j$ since units do not share
+                weights. The learning algorithm is as follows, for each unit $j$, for each $(\boldsymbol{x},
+                \boldsymbol{y})$ pair do until the output is correct for all training instances:
+                \begin{itemize}
+                    \item Case 1: Correct output produced then $\forall i W_{ji} \leftarrow W_{ji}$
+                    \item Case 2: Output produced 0 instead of 1 then $\forall i W_{ji} + x_i$
+                    \item Case 3: Output produced is 1 instead of 0 then $\forall i W_{ji} - x_i$ 
+                \end{itemize}
+
+                Now we will demonstrate the intuition behind this. If we consider using a threshold activation function then
+                the perceptron computes:
+                \begin{itemize}
+                    \item 1 when $\boldsymbol{w}^T\overline{\boldsymbol{x}} = \sum_i x_iw_i + w_0 > 0$
+                    \item 0 when $\boldsymbol{w}^T\overline{\boldsymbol{x}} = \sum_i x_iw_i + w_0 < 0$
+                \end{itemize}
+
+                Now leveraging the fact that $\overline{\boldsymbol{x}}^T\overline{\boldsymbol{x}} \geq 0$ and
+                $\overline{\boldsymbol{x}}^T\overline{\boldsymbol{x}} \leq 0$ then we can we can come up with the following
+                statements. 
+                \begin{itemize}
+                    \item If the output should be 1 instead of 0 then $\boldsymbol{w} \leftarrow \boldsymbol{w} +
+                    \overline{\boldsymbol{x}}$ since $(\boldsymbol{w} + \overline{\boldsymbol{x}})^T\overline{\boldsymbol{x}}
+                    \geq \boldsymbol{w}^T\overline{\boldsymbol{x}}$
+                    \item If the output should be 0 instead of 1 then $\boldsymbol{w} \leftarrow \boldsymbol{w} -
+                    \overline{\boldsymbol{x}}$ since $(\boldsymbol{w} - \overline{\boldsymbol{x}})^T\overline{\boldsymbol{x}}
+                    \leq \boldsymbol{w}^T\overline{\boldsymbol{x}}$
+                \end{itemize}
+            
+            \paragraph{Sequential Gradient Descent Algorithm}
+                Alternatively we can use \hyperref[sec:GD]{gradient descent} to minimize misclassification error to
+                train the perceptron. 
+
+                Let $y \in \{-1, 1\} \forall y$ and let $M = \{(\boldsymbol{x}_n, y_n)_{\forall n}\}$ be the set of
+                misclassified examples (i.e., $y_n \boldsymbol{w}^T\overline{\boldsymbol{x}}_n < 0$).
+
+                We need to find a $\boldsymbol{w}$ that minimizes the misclassification error
+                $$ E(\boldsymbol{w}) = -\sum_{(\boldsymbol{x}_n, y_n)\in M} y_n
+                \boldsymbol{w}^T\overline{\boldsymbol{x}}_n $$
+                and the gradient is:
+                $$ \boldsymbol{\nabla E} = -\sum_{(\boldsymbol{x}_n, y_n)\in M} y_n \overline{\boldsymbol{x}}_n $$
+
+                Now applying this to the gradient descent algorithm we have:
+                $$ \boldsymbol{w} \leftarrow \boldsymbol{w} + \alpha y \overline{\boldsymbol{x}} $$
+                We adjust $\boldsymbol{w}$ one sample at a time. Here $\alpha$ is the learning rate and we see that if
+                we let $\alpha = 1$ then we recover the threshold perceptron algorithm.
+            
+            \paragraph{Limitations}
+                The decision boundary of each output neuron is linear, so Perceptrons are incapable of learning complex
+                However, if the training instances are linearly separable then this algorithm will converge to a solution.
+        
+        \subsubsection{Sigmoid Perceptron Learning}
+            Similar to Threshold perceptron learning, Sigmoid Perceptron Learning hinges on the same concepts. We can
+            set our objective to minimizing the minimum squared error or maximum likelihood which will yield the same
+            algorithm as for \hyperref[sec:LogisticRegression]{logistic regression}. 
+            $$ E(\boldsymbol{w}) = \frac{1}{2} \sum_n E_n (\boldsymbol{w})^2 = \frac{1}{2} \sum_n (y_n -
+            \sigma(\boldsymbol{w}^T\overline{\boldsymbol{x}}_n))^2 $$
+
+            We can compute the gradient to be
+            $$ \boldsymbol{\nabla E} = -\sum_n E_n(\boldsymbol{w})\sigma(\boldsymbol{w}^T
+            \overline{\boldsymbol{x}}_n)(1-\sigma(\boldsymbol{w}^T \overline{\boldsymbol{x}}_n))x_i $$
+
+            Now using sequential gradient descent we repeat the following for each $(\boldsymbol{x}_n, y_n)$ until some
+            stopping criterion is satisfied. 
+            $$ \epsilon_n \leftarrow y_n - \sigma(\boldsymbol{w}^T \overline{\boldsymbol{x}}_n) $$
+            $$ \boldsymbol{w} \leftarrow \boldsymbol{w} + \alpha \epsilon_n \sigma(\boldsymbol{w}^T
+            \overline{\boldsymbol{x}}_n) (1 - \sigma(\boldsymbol{w}^T
+            \overline{\boldsymbol{x}}_n))\overline{\boldsymbol{x}}_n) $$
+
+            It possesses the same limitations as threshold perceptron learning.
+
 
 \printindex
 
