@@ -462,6 +462,10 @@
         $t \geq 0$, so a sigmoid function is useful for classification since it can predict 1 when
         $\boldsymbol{w}^T\boldsymbol{x}$ is positive and 0 if it is negative.
 
+    \subsection{Gaussian} Lec10
+    \subsection{Tanh} Lec10
+    \subsection{Identity} Lec 10
+
 \section{Convex Optimization} \label{sec:ConvexOptimization}
     In machine learning we can often turn problems into convex functions and simplify the problem into finding the
     global minima of the function, which in essence is minimizing the training error. One of the key theorem's of a
@@ -535,6 +539,39 @@
             perform better to get closer to the minimum than Stochastic GD but it may be harder for it to escape local
             minima.
     
+    \subsection{Gradient Descent Optimization} \label{sec:GDO}
+        When training neural networks there can be issues involving slow convergence, dimensionality and magnitude. So
+        other methods were introduced to be able to quickly train neural networks with accuracy for large amounts of
+        data.
+        
+        \subsubsection{Adaptive Gradients} \label{sec:AdaGrad}
+            Adagrad is an algorithm for gradient-based optimization that adapts to the learning rate to the parameters,
+            performing smaller updates for parameters associated with frequently occurring features and larger updates for
+            parameters associated with infrequent features. It is well suited for dealing with sparse features.
+
+            $$ r_t \leftarrow r_{t-1} + (\frac{\partial E_n}{\partial w_{ji}})^2 $$
+            $$ w_{ji} \leftarrow w_{ji} - \frac{\alpha}{\sqrt{r_t}} \frac{\partial E_n}{\partial w_{ji}} $$
+
+            The problem is that the learning rate $\frac{\alpha}{\sqrt{r_t}}$ decays too quickly.
+
+        \subsubsection{RMS Prop} \label{sec:RMSProp}
+            To combat the problem with AdaGrad we can instead divide by the root mean square of partial derivatives.
+
+            $$ r_t \leftarrow \beta r_{t-1} + (1 - \beta)(\frac{\partial E_n}{\partial w_{ji}})^2 \quad \text{where $0
+            \leq \beta \leq 1$}$$
+            $$ w_{ji} \leftarrow w_{ji} - \frac{\alpha}{\sqrt{r_t}} \frac{\partial E_n}{\partial w_{ji}} $$
+
+            The problem now is that the gradient lacks momentum.
+
+        \subsubsection{Adaptive Moment Estimate} \label{sec:ADAM}
+            Now to induce momentum, Adam replaces the gradient by the moving average.
+
+            $$ r_t \leftarrow \beta r_{t-1} + (1 - \beta)(\frac{\partial E_n}{\partial w_{ji}})^2 \quad \text{where $0
+            \leq \beta \leq 1$} $$
+            $$ s_t \leftarrow \gamma s_{t-1} + (1 - \gamma)(\frac{\partial E_n}{\partial w_{ji}}) \quad \text{where $0
+            \leq \gamma \leq 1$} $$
+            $$ w_{ji} \leftarrow w_{ji} - \frac{\alpha}{\sqrt{r_t}}s_t $$
+
 \section{Instance-Based Learning}
     \subsection{Parametric vs Non-Parametric Methods}
         Datasets can be represented as a set of points in a high-dimensional space; a data point with $n$ features $x_1,
@@ -1372,11 +1409,82 @@
             $$ \epsilon_n \leftarrow y_n - \sigma(\boldsymbol{w}^T \overline{\boldsymbol{x}}_n) $$
             $$ \boldsymbol{w} \leftarrow \boldsymbol{w} + \alpha \epsilon_n \sigma(\boldsymbol{w}^T
             \overline{\boldsymbol{x}}_n) (1 - \sigma(\boldsymbol{w}^T
-            \overline{\boldsymbol{x}}_n))\overline{\boldsymbol{x}}_n) $$
+            \overline{\boldsymbol{x}}_n))\overline{\boldsymbol{x}}_n $$
 
             It possesses the same limitations as threshold perceptron learning.
 
+    \subsection{Multi-Layer Neural Nets}
+        We previously saw the limitations of the perceptron as it was only able to learn on linearly separable data.
+        Unfortunately a lot of data is not linear and this led to the birth of Multi-layer Neural Networks:
+        which are able to learn non-linear basis functions.
 
+        \subsubsection{n-Layer Perceptron}
+            The follow diagram depicts a 2 layer perceptron. Multilayer perceptron are composed of one (passthrough)
+            \textit{input layer}, one or more layers of ANN's units called \textit{hidden layers}, and one final layer of
+            ANN units called the \textit{output layer}. The layers close to the input layer are usually called the
+            \textit{lower layers}, and the ones close to the outputs are usually called the \textit{upper layers}. Every
+            layer except the output layer includes a bias neuron and is fully connected to the next layer.
+            
+            \begin{center}
+                \includegraphics[scale=0.65]{MLP}
+            \end{center}
+
+            Let us denote the hidden units with $\boldsymbol{z}$, the output units with $\boldsymbol{y}$ and the weights
+            between the layers with $\boldsymbol{w}^(layer_num)$.
+            
+            Hidden Units: $z_j = h_1(\boldsymbol{w}_j^{(1)} \overline{\boldsymbol{x}})$
+
+            Output Units: $y_k = h_2(\boldsymbol{w}_k^{(2)} \overline{\boldsymbol{z}})$
+
+            Overall: $y_k = h_2 (\sum_j w_{kj}^{(2)} h_1(\sum_i w_{ji}^{(1)}x_i))$
+
+            \paragraph{Non-linear Regression}
+                We can use a multi-layer neural network to equivalently represent regression with the following expression.
+                $$ y_k = \sum_j w_{kj}^{(2)} \sigma(\sum_i w_{ji} x_i) $$
+
+                We can interpret the \hyperref[sec:Sigmoid]{sigmoid} as a non linear basis function and the outer summation to be the linear
+                combination. 
+                
+            \paragraph{Non-linear Classification}
+                We can use a multi-layer neural network to equivalently represent binary classification with the following
+                expression.
+                $$ P(c_k | \boldsymbol{x}) = \sigma(\sum_j w_{kj}^{(2)} \sigma(\sum_i w_{ji} x_i)) $$
+                
+                We can interpret the \hyperref[sec:Sigmoid]{sigmoid} as a non-linear basis function and the outer summation to be the linear
+                combination. The outer sigmoid is the normalization to return the probability.
+
+            What is happening in both regression and classification is we are allowing the basis functions to adapt and
+            vary and we are no longer restricted to fixed basis functions.
+        
+        \subsubsection{Backpropagation}
+            One of the most common forms of weight training for multi-layer neural nets is error minimization using
+            backpropagation. This allows us to compare the errors at the output and backpropagate the error
+            back through the error through the network to train the weights.
+
+            We can then use \hyperref[sec:GD]{gradient descent} to to adjust the weights. Generally based on the size of
+            the model and the data it is more favorable to use faster gradient descent algorithms and we can consider
+            \hyperref[sec:GDO]{gradient descent optimizations} for training.
+
+            \paragraph{Algorithm}
+                Forward Phase: Propagate units forward to compute the output of each unit. We want to obtain the output
+                $z_j$ for each unit $j$.
+                $$ z_j = h(a_j) \quad \text{where} \quad a_j = \sum_i w_{ji} z_i $$
+
+                Backward Phase: compute delta $\delta_j$ at each unit $j$. We can use chain rule to recursively compute
+                the gradient and follow the following process.
+                
+                For each weight $w_{ji}$
+                $$ \frac{\partial E_n}{\partial w_{ji}} = \frac{\partial E_n}{\partial a_{j}} \frac{\partial
+                a_j}{\partial w_{ji}} = \delta_{j} z_i $$ 
+
+                Let $\delta_j = \frac{\partial E_n}{\partial a_{j}}$ then
+                \[ \delta_j = \begin{cases} 
+                    h'(a_j)(z_j - y_j) & \text{base case: $j$ is an output unit} \\
+                    h'(a_j)\sum_k w_k \delta_k & \text{recursion: $j$ is a hidden unit}
+                    \end{cases}
+                \]
+                
+                Since $a_j = \sum_i w_{ji}z_i$ then $\frac{\partial a_j}{\partial w_{ji}} = z_i$.
 \printindex
 
 \end{document}
