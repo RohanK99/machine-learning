@@ -463,8 +463,53 @@
         $\boldsymbol{w}^T\boldsymbol{x}$ is positive and 0 if it is negative.
 
     \subsection{Gaussian} Lec10
-    \subsection{Tanh} Lec10
+    \subsection{Tanh} \label{sec:Tanh} Lec10
     \subsection{Identity} Lec 10
+
+    \subsection{Rectified Linear Units} \label{sec:RelU}
+        The \textit{RelU function} plotted in blue is defined as
+        $$ h(a) = max(0, a) $$
+
+        and the soft version ("Softplus") plotted in red is defined as
+        $$ h(a) = log(1 + e^a) $$
+
+        \begin{tikzpicture}
+            \begin{axis}
+            [%
+                axis line style = thick, grid=major, xmin=-7.5, xmax=7.5, ytick={0,3,7,10}, width = \linewidth, height =
+                5cm]
+                \addplot%
+                [
+                    blue,%
+                    mark=none,
+                    samples=100,
+                    domain=-7.5:0,
+                ]
+                {0};
+
+                \addplot%
+                [
+                    blue,%
+                    mark=none,
+                    samples=100,
+                    domain=0:7.5,
+                ]
+                {x};
+
+                \addplot%
+                [
+                    red,%
+                    mark=none,
+                    samples=100,
+                    domain=-7.5:7.5,
+                ]
+                {ln(1+e^x)};
+            \end{axis}
+        \end{tikzpicture}
+        
+        The benefit of using the RelU activation function is that the gradient is 0 or 1 so it helps mitigate the
+        \hyperref[sec:VanishingProblem]{vanishing problem} for deep neural networks. The softplus function does not
+        prevent gradient vanishing.
 
 \section{Convex Optimization} \label{sec:ConvexOptimization}
     In machine learning we can often turn problems into convex functions and simplify the problem into finding the
@@ -1456,7 +1501,7 @@
             What is happening in both regression and classification is we are allowing the basis functions to adapt and
             vary and we are no longer restricted to fixed basis functions.
         
-        \subsubsection{Backpropagation}
+        \subsubsection{Backpropagation} \label{sec:Backprop}
             One of the most common forms of weight training for multi-layer neural nets is error minimization using
             backpropagation. This allows us to compare the errors at the output and backpropagate the error
             back through the error through the network to train the weights.
@@ -1485,6 +1530,38 @@
                 \]
                 
                 Since $a_j = \sum_i w_{ji}z_i$ then $\frac{\partial a_j}{\partial w_{ji}} = z_i$.
+
+\section{Deep Learning}
+    A Deep Neural Network is a neural network with many hidden layers. The main advantage of a DNN is its high
+    expressivity, it is able to learn very complex underlying functions. As we increase the number of layers, the number
+    of ANN units needed may decrease (with the number of layers). The power and basis of deep learning is that instead
+    of having to have domain knowledge about what features to apply machine learning to, deep neural networks are able
+    to learn hierarchical feature representations. For example for facial classification the first hidden layer detects
+    certain strokes, the next is able to detect facial features such as eyes and noses and so on until it is able to
+    reconstruct and detect the face.
+    
+    \subsection{Training}
+        \subsubsection{Vanishing/Exploding Gradients Problem} \label{sec:VanishingProblem}
+            One of the problems of \hyperref[sec:Backprop]{backpropagation} in deep neural networks consisting of sigmoid
+            and hyperbolic units is that they often suffer from \textit{vanishing gradients}. The problem here is that the
+            computed gradients get smaller and smaller as the algorithm progresses down to the lower layers. As a result,
+            the \hyperref[sec:GD]{gradient descent} update leaves the lower layers' connection weights virtually unchanged,
+            and training never converges to a good solution. This is because when moving in the forward phase the
+            variance keeps increasing after each layer until the activation saturates at the top layer when using the
+            \hyperref[sec:Sigmoid]{sigmoid} or \hyperref[sec:Tanh]{tanh} activation function. When the function
+            saturates at 0 or 1, with a derivative extremely close to 0, then when backpropagation kicks in it has
+            virtually no gradient to propagate back through the network. The little gradient that exists keeps getting
+            diluted as backpropagation progresses down through the top layers, so there is really nothing left for the
+            lower layers.
+            
+            \paragraph{Popular Solutions}
+                \begin{itemize}
+                    \item Pre-training
+                    \item \hyperref[sec:RelU]{Recfitified Linear Units} and Max Out Units
+                    \item Skip Connections
+                    \item Batch Normalization
+                \end{itemize}
+
 \printindex
 
 \end{document}
