@@ -401,6 +401,30 @@
             $$Specificity = \frac{TN}{TN + FP}$$
 
 \section{Activation Functions} \label{sec:ActivationFunction}
+    \subsection{Linear/Identity} \label{sec:Identity}
+        The \textit{linear function} is an activation function where the output is proportional to the input and the
+        \textit{identity function} is a subset of the linear function where $a = 1$. 
+        $$ h(x) = ax $$
+
+        \begin{tikzpicture}
+            \begin{axis}
+            [%
+                axis line style = thick, grid=major, xmin=-7.5, xmax=7.5, ytick={-7,-3,0,3,7}, width = \linewidth, height =
+                5cm] \addplot%
+                [
+                    blue,%
+                    mark=none,
+                    samples=100,
+                    domain=-7.5:7.5,
+                ]
+                {x};
+            \end{axis}
+        \end{tikzpicture}
+
+        The linear function gives a range of activations so it is not a binary activation. The derivative is
+        constant so the gradient has no relationship with $\boldsymbol{X}$ and therefore backpropagation and gradient
+        descent would not work with this activation function.
+
     \subsection{Threshold} \label{sec:Threshold}
         The \textit{threshold function} denoted $heaviside(\cdot)$ outputs a number 0 or 1 based on its input $z$. It is defined as a piecewise function
         \[
@@ -462,9 +486,29 @@
         $t \geq 0$, so a sigmoid function is useful for classification since it can predict 1 when
         $\boldsymbol{w}^T\boldsymbol{x}$ is positive and 0 if it is negative.
 
-    \subsection{Gaussian} Lec10
-    \subsection{Tanh} \label{sec:Tanh} Lec10
-    \subsection{Identity} Lec 10
+    \subsection{Tanh} \label{sec:Tanh}
+        The \textit{tanh function} denoted $tanh(\cdot)$ outputs a number between -1 and 1. It is zero-centered function making it easier to
+        model inputs that have strongly negative, neutral, and strongly positive values, otherwise it is similar to the \hyperref[sec:Sigmoid]{sigmoid
+        function}.
+        $$ h(a) = tanh(a) = \frac{e^a - e^{-a}}{e^a + e^{-a}} $$
+
+        \begin{tikzpicture}
+            \begin{axis}
+            [%
+                axis line style = thick, grid=major, xmin=-7.5, xmax=7.5, ytick={-1,0,1}, width = \linewidth, height =
+                5cm] \addplot%
+                [
+                    blue,%
+                    mark=none,
+                    samples=100,
+                    domain=-7.5:7.5,
+                ]
+                {(e^x - e^(-x))/(e^x + e^(-x))};
+            \end{axis}
+        \end{tikzpicture}
+
+        The gradient is stronger for tanh than sigmoid, however, tanh also has the
+        \hyperref[sec:VanishingProblem]{vanishing gradient problem}.
 
     \subsection{Rectified Linear Units} \label{sec:RelU}
         The \textit{RelU function} plotted in blue is defined as
@@ -510,6 +554,13 @@
         The benefit of using the RelU activation function is that the gradient is 0 or 1 so it helps mitigate the
         \hyperref[sec:VanishingProblem]{vanishing problem} for deep neural networks. The softplus function does not
         prevent gradient vanishing.
+        
+        \subsubsection{Maxout Units} \label{sec:MaxoutUnits}
+            Generalization of rectified linear units where we can have several linear parts and having
+            them be whatever we want rather than having a $0$ part. They can be thought of as the aggregation of a hidden
+            layer of identity units with a max unit.
+
+            $$ max \{ \sum_i w_i^{(1) x_i, \sum_i w_i^{(2)}} x_i, \sum_i w_i^{(3)}x_i, ...\} $$
 
 \section{Convex Optimization} \label{sec:ConvexOptimization}
     In machine learning we can often turn problems into convex functions and simplify the problem into finding the
@@ -1557,10 +1608,51 @@
             \paragraph{Popular Solutions}
                 \begin{itemize}
                     \item Pre-training
-                    \item \hyperref[sec:RelU]{Recfitified Linear Units} and Max Out Units
+                    \item \hyperref[sec:RelU]{Recfitified Linear Units} and \hyperref[sec:MaxoutUnits]{Maxout Units}
                     \item Skip Connections
                     \item Batch Normalization
                 \end{itemize}
+        
+        \subsubsection{Dropout} 
+            Since deep neural networks are so highly expressive this increases the risk of overfitting. Often times the
+            number of parameters is larger than the amount of data. We can use a technique called dropout to help
+            mitigate overfitting.
+
+            The idea behind dropout is to randomly "drop" some units from the network when training, this effectively is
+            the same as saying to reduce their values to 0. Now we train the model with missing nodes (that could
+            represent features) making the network robust if it is able to still perform well and making it impervious
+            to overfitting since it can perform well with some features removes. In each training iteration, a different
+            subnetwork is trained. At test time, these subnetworks are merged by averaging their weights.
+
+            At training during each iteration of gradient descent:
+            \begin{itemize}
+                \item Each input unit is dropped with probability $p_1$
+                \item Each hidden unit is dropped with probability $p_2$.
+            \end{itemize}
+
+            For prediction, since we scaled down the inputs by probability $p_1$ and the hidden units by $p_2$, so we need to
+            multiply by their complementary probability to increase their magnitude accordingly.
+            \begin{itemize}
+                \item Multiply each input unit by $1 - p_1$
+                \item Multiply each hidden unit by $1 - p_2$
+            \end{itemize}
+
+            \paragraph{Algorithm}
+            Let $\odot$ denote elementwise multiplication.
+            For each training example $(\boldsymbol{x}_n, y_n)$ do
+            \begin{align*}
+                & \text{Sample} \; \boldsymbol{z}_n^{(1)} \; \text{from Bernoulli} (1 - p_i)^{k_i} \; \text{for} \; 1 \leq l \leq L \\
+                & \text{Neural Network with dropout applied: } \\ 
+                & f_n(\boldsymbol{x}_n, \boldsymbol{z}_n; \boldsymbol{W}) = h_i(\boldsymbol{W}^{(L)} [...h_2(\boldsymbol{W}^{(2)}[h_1(\boldsymbol{W}^{(1)}[\overline{\boldsymbol{x}}_n \odot \boldsymbol{z}_n^{(1)}])\odot \boldsymbol{z_n}^{(2)}])... \odot \boldsymbol{z}_n^{(L)}]) \\
+                & \text{Loss: } \; Err(y_n, f_n(\boldsymbol{x}_n, \boldsymbol{z}_n; \boldsymbol{W})) \\
+                & \text{Update: } \; w_{kj} \leftarrow w_{kj} - \alpha \frac{\partial Err}{\partial w_{kj}}
+            \end{align*}
+            Until convergence.
+
+            Prediction:
+            $$ f(\boldsymbol{x}_n; \boldsymbol{W}) = h_i(\boldsymbol{W}^{(L)}
+            [...h_2(\boldsymbol{W}^{(2)}[h_1(\boldsymbol{W}^{(1)}[\overline{\boldsymbol{x}}_n (1-p_1)])(1-p_2)])...
+            (1-p_L)]) $$        
 
 \printindex
 
