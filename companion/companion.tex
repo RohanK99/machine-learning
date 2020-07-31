@@ -875,7 +875,7 @@
             This is the \hyperref[sec:RidgeReg]{ridge regularized} least square problem that reduces
             \hyperref[sec:Overfitting]{overfitting}.
 
-    \subsection{Mixture of Gaussians}
+    \subsection{Mixture of Gaussians} \label{sec:MixtureOfGaussian}
         Now we consider the probabilistic generative model \label{fact:GenerativeModel} for classification. We can
         compute the posterior $P(C|\boldsymbol{x})$ according to \hyperref[fact:Bayes]{Bayes' theorem} to estimate the
         probability of the class for a given data point. Here we are using Bayes theorem for inference rather than for
@@ -1791,7 +1791,138 @@
         \subsubsection{Locally Equivariant Representation}
             With pooling layers we are able to make the network robust and invariant to translations as well as handle
             inputs of varying length.
-    
+
+\section{Hidden Markov Models}
+    Hidden Markov models provide a way to make predictions for a sequence of data where the prediction for one data
+    point is dependent or correlated with the prediction for the next data point. This is different than other models
+    that treat each data point independently. For example in speech recognition words can be recognized/interpreted based on the
+    sound of the syllables before it. Hidden Markov models are a generalization of
+    \hyperref[sec:MixtureOfGaussian]{Mixture of Gaussians}.
+
+    \begin{center}
+        \includegraphics[scale=0.3]{HMM}
+    \end{center}
+
+    \subsection{Assumptions} 
+        \subsubsection{Stationary Process}
+            Transition and emission distributions are identical at each step
+            \begin{align*}
+                & P(x_t|y_t) = P(x_{t+1}|y_{t+1}) \; \forall t \\
+                & P(y_t|y_{t-1}) = P(y_{t+1}|y_{t}) \; \forall t
+            \end{align*}
+        
+        \subsubsection{Markovian Process}
+            Next state is independent of previous states given the current statements
+            $$ P(y_{t+1}|y_{t}, y_{t-1},...,y_{1}) = P(y_{t+1}|y_{t}) \; \forall t $$
+        
+        \subsubsection{Distributions}
+            Initial Distribution
+            $$ P(y_i) \sim multinomial $$
+
+            Transition Distribution
+            $$ P(y_{i+1}|y_{i}) \sim multinomial $$
+
+            Emission Distribution
+            \begin{align*}
+                P(x_{t} | y_{t}) & \sim gaussian (continuous) \\
+                & \sim multinomial (discrete)
+            \end{align*}
+
+            Joint Distribution
+            $$ P(y_{1 .. t}, x_{1 .. t}) = P(y_{1})\prod_{i=1}^{t-1} P(y_{i+1}|y_{i}) \prod_{i=1}^{t} P(x_{i}|y_{i})
+            $$
+            
+    \subsection{Inference in Temporal Models}
+        There are many applications of Hidden Markov Models for example mobile robot localisation. 
+        In scenarios like we generally want to compute 4 common tasks:
+        \begin{itemize}
+            \item \textbf{Monitoring: } $P(y_t|x_{1..t})$
+            \item \textbf{Prediction: } $P(y_{t+k} | x_{1..t}) $
+            \item \textbf{Hindsight: } $P(y_k | x_{1..t})$ where $k < t$
+            \item \textbf{Most Likely Explanation: } $argmax_{y_1,...,y_t} P(y_{1..t}|x_{1..t})$
+        \end{itemize}
+        
+        \subsubsection{Monitoring}
+            $P(y_{t}|x_{1..t})$: distribution of current state given observations. We can employ recursive computation to 
+            decompose the query to be in terms of the probability of the previous hidden state.
+
+            $$ P(y_{t}|x_{1..t}) \propto P(x_t)P(y_t) \sum_{y_{t-1}}P(y_{t}|y_{t-1})P(y_{t-1}|x_{1..t-1}) $$
+
+            Now with this derivation we can compute $P(y_{t}|x_{1..t})$ by forward computation.
+
+            \begin{align*}
+                & P(y_1|x_1) \propto P(x_1|y_1)P(y_1) \\
+                & \text{For} \; i=2 \; \text{to} \; t \; \text{do} \\
+                & \qquad P(y_{i}|x_{1..i}) \propto P(x_i|y_i)\sum_{y_{i-1}} P(y_{i}|y_{i-1})P(y_{i-1}|x_{1..i-1}) \\
+                & \text{End}
+            \end{align*}
+
+            Linear complexity in $t$
+        
+        \subsubsection{Prediction}
+            $P(y_{t+k}|x_{1..t})$: distribution over future state up to $k$ given observations. Using recursive
+            computation we obtain
+            $$ P(y_{t+k}|x_{1..t} = \sum_{y_{t+k-1}} P(y_{t+k} | y_{t+k-1})P(y_{t+k-1}|x_{1..t}) $$
+            where we predict based on the previous state.
+
+            Now computing $P(y_{t+k} | x_{1..t})$ by forward computation, we first have to use monitoring until we
+            need to do prediction.
+            \begin{align*}
+                & \text{For} \; j=1 \; \text{to} \; k \; \text{do} \\
+                & \qquad P(y_{t+j}|x_{1..t}) = \sum_{y_{t+j-1}} P(y_{t+j}|y_{t+j-1})P(y_{t+j-1}|x_{1..t}) \\
+                & \text{End}
+            \end{align*}
+
+            Linear complexity in $t+k$.
+        
+        \subsubsection{Hindsight}
+            $P(y_k|x_{1..t})$ for $k < t$: distribution over a paste state give observations. Some examples of this
+            are delayed activity/speech recognition.
+
+            Computation:
+            $$ P(y_k|x_{1..t}) = P(y_k|x_{1..k})P(x_{k+1..t}|y_k) $$
+            We see this is composed of two parts the first being the forward monitoring and the latter being the 
+            backward part where we take the future observations and propagate them back. The latter can be expressed as:
+            $$ P(x_{k+1..t}|y_k) = \sum_{y_{k+1}} P(y_{k+1}|y_k) P(x_{k+1}|y_{k+1})P(x_{k+2..t}|y_{k+1}) $$
+
+            The algorithm for computation is the forward-backward algorithm expressed as follows.
+            
+            1. Compute $P(y_k|x_{1..k})$ by forward computation (monitoring)
+
+            2. Compute $P(x_{k+1..t}|y_k)$ by backward computation
+            \begin{align*}
+                & P(x_t|y_{t-1}) = \sum_t P(y_t|y_{t-1})P(x_t|y_t) \\
+                & \text{For} \; j=t-1 \; \text{downto} \; k \; \text{do} \\
+                & \qquad P(x_{j..t}|y_{j-1}) = \sum_{y_j} P(y_j|y_{j-1}) P(x_{j}|y_{j})P(x_{j+1..t}|y_{j}) \\
+                & \text{End}
+            \end{align*}
+            
+            3. $P(y_k|x_{k+1..t}) \propto P(y_k|x_{1..k})P(x_{k+1..t}|y_k)$
+
+            Linear complexity in $t$.
+        
+        \subsubsection{Most Likely Explanation}
+            $argmax_{y_{1..t}} P(y_{1..t}|x_{1..t})$: most likely state sequence given observations.
+
+            Computation:
+            $$ max_{y_{1..t}} P(y_{1..t}|x_{1..t}) = max_{y_t} P(x_t|y_t) max_{y_{1..t-1}} P(y_{1..t}|x_{1..t-1}) $$
+
+            By Recursive Computation we get:
+            $$ max_{y_{1..i-1}} P(y_{1..i}|x_{1..i-1}) \propto max_{y_{i-1}} P(y_i|y_{i-1})P(x_{i-1}|y_{i-1})
+            max_{y_{1..i-2}} P(y_{1..i-1}|x_{1..i-2}) $$ 
+        
+            Now we can use this to compute $max_{y_{1..t}} P(y_{1..t}|x_{1..t})$ by dynamic programming.
+
+            \paragraph{Viterbi Algorithm}
+                \begin{align*}
+                    & max_{y_1} P(y_{1..2}|x_1) \propto max_{y_1} P(y_2|y_1)P(x_1|y_1)P(y_1) \\
+                    & \text{For} \; i=2 \; \text{to} \; t-1 \; \text{do} \\
+                    & \qquad max_{y_{1..i}} P(y_{1..i+1}|x_{1..i}) \propto max_{y_i} P(y_{i+1}|y_i)P(x_i|y_i) max_{y_{1..i-1}} P(y_{1..i} | x_{1..i-1}) \\
+                    & \text{End} \\
+                    & max_{y_{1..t}} P(y_{1..t}|x_{1..t}) \propto max_{y_t} P(x_t|y_t) max_{y_{1..t-1}} P(y_{1..t}|x_{1..t-1})
+                \end{align*}
+                
+                Linear complexity in $t$.
 \printindex
 
 \end{document}
