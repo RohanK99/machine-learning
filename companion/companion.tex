@@ -510,8 +510,8 @@
         The gradient is stronger for tanh than sigmoid, however, tanh also has the
         \hyperref[sec:VanishingProblem]{vanishing gradient problem}.
 
-    \subsection{Rectified Linear Units} \label{sec:RelU}
-        The \textit{RelU function} plotted in blue is defined as
+    \subsection{Rectified Linear Units} \label{sec:reLU}
+        The \textit{reLU function} plotted in blue is defined as
         $$ h(a) = max(0, a) $$
 
         and the soft version ("Softplus") plotted in red is defined as
@@ -551,7 +551,7 @@
             \end{axis}
         \end{tikzpicture}
         
-        The benefit of using the RelU activation function is that the gradient is 0 or 1 so it helps mitigate the
+        The benefit of using the reLU activation function is that the gradient is 0 or 1 so it helps mitigate the
         \hyperref[sec:VanishingProblem]{vanishing problem} for deep neural networks. The softplus function does not
         prevent gradient vanishing.
         
@@ -1591,33 +1591,56 @@
     certain strokes, the next is able to detect facial features such as eyes and noses and so on until it is able to
     reconstruct and detect the face.
     
-    \subsection{Training}
-        \subsubsection{Vanishing/Exploding Gradients Problem} \label{sec:VanishingProblem}
-            One of the problems of \hyperref[sec:Backprop]{backpropagation} in deep neural networks consisting of sigmoid
-            and hyperbolic units is that they often suffer from \textit{vanishing gradients}. The problem here is that the
-            computed gradients get smaller and smaller as the algorithm progresses down to the lower layers. As a result,
-            the \hyperref[sec:GD]{gradient descent} update leaves the lower layers' connection weights virtually unchanged,
-            and training never converges to a good solution. This is because when moving in the forward phase the
-            variance keeps increasing after each layer until the activation saturates at the top layer when using the
-            \hyperref[sec:Sigmoid]{sigmoid} or \hyperref[sec:Tanh]{tanh} activation function. When the function
-            saturates at 0 or 1, with a derivative extremely close to 0, then when backpropagation kicks in it has
-            virtually no gradient to propagate back through the network. The little gradient that exists keeps getting
-            diluted as backpropagation progresses down through the top layers, so there is really nothing left for the
-            lower layers.
-            
-            \paragraph{Popular Solutions}
-                \begin{itemize}
-                    \item Pre-training
-                    \item \hyperref[sec:RelU]{Recfitified Linear Units} and \hyperref[sec:MaxoutUnits]{Maxout Units}
-                    \item Skip Connections
-                    \item Batch Normalization
-                \end{itemize}
+    \subsection{Vanishing/Exploding Gradients Problem} \label{sec:VanishingProblem}
+        One of the problems of \hyperref[sec:Backprop]{backpropagation} in deep neural networks consisting of sigmoid
+        and hyperbolic units is that they often suffer from \textit{vanishing gradients}. The problem here is that the
+        computed gradients get smaller and smaller as the algorithm progresses down to the lower layers. As a result,
+        the \hyperref[sec:GD]{gradient descent} update leaves the lower layers' connection weights virtually unchanged,
+        and training never converges to a good solution. This is because when moving in the forward phase the
+        variance keeps increasing after each layer until the activation saturates at the top layer when using the
+        \hyperref[sec:Sigmoid]{sigmoid} or \hyperref[sec:Tanh]{tanh} activation function. When the function
+        saturates at 0 or 1, with a derivative extremely close to 0, then when backpropagation kicks in it has
+        virtually no gradient to propagate back through the network. The little gradient that exists keeps getting
+        diluted as backpropagation progresses down through the top layers, so there is really nothing left for the
+        lower layers.
         
-        \subsubsection{Dropout} 
-            Since deep neural networks are so highly expressive this increases the risk of overfitting. Often times the
-            number of parameters is larger than the amount of data. We can use a technique called dropout to help
-            mitigate overfitting.
+        Some popular solutions for this problem are:
+        \begin{itemize}
+            \item Pre-training
+            \item \hyperref[sec:reLU]{Recfitified Linear Units} and \hyperref[sec:MaxoutUnits]{Maxout Units}
+            \item \hyperref[sec:ResNet]{Residual Networks/Skip Connections}
+            \item \hyperref[sec:BatchNormalization]{Batch Normalization}
+        \end{itemize}
 
+        \subsubsection{Batch Normalization} \label{sec:BatchNormalization}
+            TODO:
+
+        \subsubsection{Residual Networks} \label{sec:ResNet}
+            Even with \hyperref[sec:reLU]{reLU}, very deep networks suffer from vanishing gradients. Residual Networks
+            leverages an architecture with sip connections, which are essentially connections from early layers to later
+            layers bypassing certain layers. In Residual Networks the input $\boldsymbol{x}$ of the skip connection is added to the
+            output of the layers it skipped thus the overall output is $f(\boldsymbol{x}) + \boldsymbol{x}$. The
+            intuition behind this type of skip connection sit that they have an uninterrupted gradient flow from the
+            first layer to the last layer. If the output of some combination of layers results in a gradient of almost
+            then by using skip connections we pass the original input $x$ to the output, allowing us to use that
+            gradient rather than the diminished one.
+
+            \begin{center}
+                \includegraphics[scale=0.5]{ResNet.png}
+            \end{center}
+
+    \subsection{Overfitting}
+        Since deep neural networks are so highly expressive this increases the risk of overfitting. Often times the
+        number of parameters is larger than the amount of data. We can use some of the follow techniques to help
+        mitigate overfitting.
+    
+        \begin{itemize}
+            \item \hyperref[sec:Regularization]{Regularization}
+            \item \hyperref[sec:Dropout]{Dropout}
+            \item \hyperref[sec:DataAugmentation]{Data augmentation}
+        \end{itemize}
+
+        \subsubsection{Dropout} \label{sec:Dropout}
             The idea behind dropout is to randomly "drop" some units from the network when training, this effectively is
             the same as saying to reduce their values to 0. Now we train the model with missing nodes (that could
             represent features) making the network robust if it is able to still perform well and making it impervious
@@ -1653,7 +1676,122 @@
             $$ f(\boldsymbol{x}_n; \boldsymbol{W}) = h_i(\boldsymbol{W}^{(L)}
             [...h_2(\boldsymbol{W}^{(2)}[h_1(\boldsymbol{W}^{(1)}[\overline{\boldsymbol{x}}_n (1-p_1)])(1-p_2)])...
             (1-p_L)]) $$        
+        
+        \subsubsection{Data Augmentation} \label{sec:DataAugmentation}
+            TODO:
 
+\section{Convolutional Neural Networks} \label{sec:CNN}
+    Convolutional networks are a specialized king of neural network for processing data that has a known grid-like
+    topology. Examples include time-series data, which can be thought of as a 1-D grid taking samples at regular time
+    intervals, and image data, which can be thought of as a 2-D grid of pixels. 
+
+    \subsection{Convolution}
+        In its most general form, convolution is a mathematical operation on two functions of real-valued argument. In
+        essence it uses a weighted function $w(\tau)$, where $\tau$ is the age of the measurement. It applies this weight
+        average operation at every moment to obtain a new function $y$ providing a smoothed estimate of the original
+        function $x$.
+        $$ y(t) = \int_t x(\tau)w(t - \tau)d\tau $$
+
+        This is the convolution and it is typically denoted with an asterisk.
+        $$ y(t) = (x * w)(t) $$
+
+        In convolutional network terminology, the first argument ($x$) to the convolution is referred to as the \textit{input},
+        and the second argument ($w$) as the \textit{kernel}. The output is sometimes referred to as the \textit{feature
+        map}.
+
+        Often times we will be working with discretized data and we can define the discrete convolution as:
+        $$ y(t) = (x * w)(t) = \sum_{\tau = -\infty}^{\infty} x(\tau)w(t-\tau) $$
+
+        In machine learning applications, the input is usually a multidimensional array of data, and the kernel is
+        usually a multidimensional array of parameters that are adapted by the learning algorithm. For this we often
+        require to use convolutions over more than one axis at a time. In this case we would want to use a
+        two-dimensional kernel K and express the convolution as:
+        $$ y(i,j) = (I * K)(i,j) = \sum_m \sum_n I(m, n)K(i-m,j-n) $$
+        and by commutativity:
+        $$ y(i,j) = (I * K)(i,j) = \sum_m \sum_n I(i-m, j-n)K(m,n) $$
+
+        Many neural network libraries will also implement a related function called the \textit{cross-correlation},
+        which is that same as convolution but without flipping the kernel:
+        $$ y(i,j) = (I * K)(i,j) = \sum_m \sum_n I(i+m, j+n)K(m,n) $$
+    
+        \subsection{Convolutions for Feature Extraction}
+            In neural networks a convolution denotes the linear combination of a subset of units based on a specific
+            pattern of weights. 
+            $$ a_j = \sum_i w_{ji}z_i $$
+
+            Convolutions are often combined with an activation function to produce a feature
+            $$ z_j = h(a_j) = h(\sum_i w_{ji}z_i) $$
+    
+    \subsection{Architecture}
+        The architecture of a CNN refers to any network that includes an alternation of convolution and pooling layers,
+        where some of the convolution weights are shared.
+                
+        \subsubsection{Filters}
+            A neuron's weights can be represented as a small image the size of the receptive field or window called
+            filters. When applying a filter over a receptive field the neurons using those weights will ignore
+            everything in their receptive field except for what that filter dictates. E.g a vertical filter will cause
+            all neurons to ignore everything except for the central vertical line (since all inputs will get multiplied
+            by 0, except for the ones located on the central vertical line). A layer full of neurons using the same
+            filter outputs a feature map, which highlights the areas in an image that activate the filter the most. You
+            do not have to define the filters manually, during training the convolutional layer wil automatically learn
+            the most useful filters for its task.
+
+        \subsubsection{Convolutional Layers}
+            The most important building block of a CNN is the \textit{convolutional layer}, neurons in the first
+            convolutional layer are not connected to every single pixel in the input image, but only to pixels in their
+            receptive field. In turn each neuron in the second convolutional layer is connected only to neurons located
+            within the small window in the first layer. This architecture allows the network to concentrate on small
+            low-level features in the first hidden layer, then assemble them into larger higher-level features in the
+            next hidden layer, and so on. For each window we apply the same filter / set of weights. 
+
+            \begin{center}
+                \includegraphics[scale=0.65]{ConvLayer}
+            \end{center}
+
+            It is also possible to connect a large input layer to a smaller layer by spacing out the receptive fields, which reduces the
+            complexity and dimensionality. The shift from one receptive field to the next is called the stride. 
+            
+            \begin{center}
+                \includegraphics[scale=0.65]{ConvStride}
+            \end{center}
+
+        \subsubsection{Pooling Layers}
+            The goal of pooling layers is to \textit{subsample} the input image in order to reduce the computational
+            load, the memory usage, and the number of parameters (reducing risk of overfitting). Just like in
+            convolutional layers, each neuron in a pooling layer is connected to the outputs of a limited number of
+            neurons in the previous layer, located within a small rectangular receptive field. For each receptive field
+            we must define its size, stride and padding type similar to the Convolutional Layer. The difference is that
+            a pooling neuron has no weights; all it does is aggregate the inputs using an aggregation function such as
+            max or mean. For example in a max pooling layer only the max value in each receptive field makes it to the
+            next layer.
+
+            The pooling layers also introduce some level of \textit{invariance} to small translations. For example when
+            if you have a max pooling layer and you shift some pixels around in the receptive field the output for that
+            receptive field will still be the same. 
+        
+        \subsubsection{Parameters}
+            \begin{itemize}
+                \item \textbf{Number of Filters}: integer indicating the number of filters applied to each window/receptive field.
+                \item \textbf{Kernel Size}: tuple(width, height) indicating the size of the window/receptive field.
+                \item \textbf{Stride}: tuple(horizontal, vertical) indicating the horizontal and vertical shift between
+                each window/receptive field. 
+                \item \textbf{Padding}: "valid" or "same". Valid indicates no input padding. Same indicates that the
+                input is padded with a border of zeros to ensure that the output has the same size as the input.
+            \end{itemize}
+    
+    \subsection{Benefits/Advantages}
+        \subsubsection{Sparse Interactions}
+            Since there are fewer connections between layers due to the organization of the receptive fields then it is
+            easier to train and less computationally expensive.
+        
+        \subsubsection{Parameter Sharing}
+            For each receptive field the same filter is applied so there are fewer weights that have to be computed also
+            making it less computationally expensive and less complex.
+        
+        \subsubsection{Locally Equivariant Representation}
+            With pooling layers we are able to make the network robust and invariant to translations as well as handle
+            inputs of varying length.
+    
 \printindex
 
 \end{document}
