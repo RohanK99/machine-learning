@@ -1714,7 +1714,7 @@
         which is that same as convolution but without flipping the kernel:
         $$ y(i,j) = (I * K)(i,j) = \sum_m \sum_n I(i+m, j+n)K(m,n) $$
     
-        \subsection{Convolutions for Feature Extraction}
+        \subsubsection{Convolutions for Feature Extraction}
             In neural networks a convolution denotes the linear combination of a subset of units based on a specific
             pattern of weights. 
             $$ a_j = \sum_i w_{ji}z_i $$
@@ -1923,6 +1923,72 @@
                 \end{align*}
                 
                 Linear complexity in $t$.
+
+\section{Recurrent Neural Networks} \label{sec:RNN}
+    When posed with the problem of handling variable length data (e.g., sequences, time-series, spatial data) this poses
+    a problem of a variable number of parameters. Using Recurrent Neural Networks we can handle sequences of variable
+    length data, we can generalize this to handle trees and graphs using Recursive Neural Networks.
+
+    \subsection{Recurrent Neurons}
+        In Recurrent Neural Networks, the outputs can be fed back to the network as inputs, creating a recurrent
+        structure that can be unrolled to handle varying length data. The simplest possible RNN, composed of one neuron
+        receiving inputs, producing an output, and sending that output back to itself. At each time step $t$, this
+        recurrent neuron receives the inputs $\boldsymbol{x}_t$ as well as its own output from the previous time step
+        $\boldsymbol{y}_{t-1}$. Since there is no previous output at the first time step, it is generally set to 0. 
+
+        \begin{center}
+            \includegraphics[scale=0.65]{RecurrentNeuron}
+        \end{center}
+
+        To create a layer of recurrent neurons. At each time step $t$, every neuron receives both the input vector $\boldsymbol{x}_t$
+        and the output vector from the previous step $\boldsymbol{y}_{t-1}$. Each recurrent neuron has two sets of weights: one for
+        the inputs $\boldsymbol{x}_t$ and the other for the outputs of the previous time step $\boldsymbol{y}_{t-1}$.
+        call these weight vectors $\boldsymbol{w}_x$ and $\boldsymbol{w}_y$. If we consider the whole recurrent layer we
+        can place all weight vectors in two weight matrices, $\boldsymbol{W}_x$ and $\boldsymbol{W}_y$. 
+
+        The output of a recurrent layer for a single instance can be represented with the following equation where $b$
+        is the bias vector and $\phi(\cdot)$ is the \hyperref[sec:ActivationFunction]{activation function}.
+        $$ \boldsymbol{y}_t = \phi(\boldsymbol{W}_x^T \boldsymbol{x}_t + \boldsymbol{W}_y^T \boldsymbol{y}_{t-1} + \boldsymbol{b}) $$
+
+        Similarly we can compute a recurrent layer's output using mini-batch by placing all the inputs at time step $t$
+        in an input matrix $\boldsymbol{X}_t$.
+        $$ \boldsymbol{Y}_t = \phi( \begin{bmatrix} \boldsymbol{X}_t & \boldsymbol{Y}_{t-1} \end{bmatrix} \boldsymbol{W}
+        + \boldsymbol{b}) \; \text{with} \; \boldsymbol{W} = \begin{bmatrix} \boldsymbol{W}_x \\ \boldsymbol{W}_y
+        \end{bmatrix} $$
+        
+        \subsubsection{Memory Cells}
+            The output of a recurrent neuron at time step $t$ is a function of all the inputs from the previous steps,
+            so it has some form of \textit{memory}. A part of neural network that preservers some state across time
+            steps is called a memory cell. A single recurrent neuron, or a layer of neurons is a very basic cell,
+            capable of learning only short patterns.
+
+            In general a cell's tate at time step $t$, denoted $\boldsymbol{h}_t$, is a function of some inputs at that
+            time step and its state at the previous time step: $\boldsymbol{h}_t = f(\boldsymbol{h}_{t-1},
+            \boldsymbol{x}_t)$. Its output at time step $t$, denoted $\boldsymbol{y}_t$, is also a function of the
+            previous state and the current inputs. In the case of basic cells the output is equal to the state, but in
+            more complex cells this is not always the case.
+
+            \begin{center}
+                \includegraphics[scale=0.65]{MemCell}
+            \end{center}
+    
+    \subsection{Training}
+        To train a RNN, the trick is to unroll it through time and then use regular \hyperref[sec:Backprop]{back
+        propagation}. This strategy is called backpropagation through time. The algorithm will also consider weight sharing will also play a part where
+        we combine gradients of shared weights into a single gradient. 
+        
+        There is first a forward pass through the unrolled network. Then the output sequence is evaluated using a cost
+        function. The gradients of that cost function are then propagated backward through the unrolled network. Finally
+        the model parameters are updated using the gradients computed during backpropagation through time. 
+
+        \subsubsection{Challenges}
+            Some challenges that training brings up, is the \hyperref[sec:VanishingProblem]{gradient vanishing and
+            explosion} problem. Another issue is the Long Range memory problem, although a RNN can handle sequences of events
+            but there is no guarantee it will remember information from the first input. This is specifically important
+            applications like machine translation where every input is equally important so you need the long term memory.
+            Lastly, prediction drift is another challenge when training RNN's. Prediction drift is the idea that predictions
+            far into the future will have error from the previous predictions propagated through to it and therefore be
+            less accurate.
 \printindex
 
 \end{document}
