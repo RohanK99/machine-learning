@@ -2021,7 +2021,82 @@
         One clear limitation of this architecture is when the context $C$ output by the encoder RNN has a dimension that
         is too small to properly summarize a long sequence. To adapt to this they proposed to make $C$ a
         variable-length sequence rather than a fixed-size vector. Additionally, attention mechanisms were introduced to
-        associate elements of the sequence $C$ to elements of the output sequence. 
+        associate elements of the sequence $C$ to elements of the output sequence.
+    
+    \subsection{Long-Term Dependencies}
+        The mathematical challenge of learning long-term dependencies in recurrent networks is that gradients propagated
+        over many staged tend to either vanish or explode (\hyperref[sec:VanishingProblem]{gradient vanishing problem}).
+        Even if we assume that the parameters are such that the recurrent network is stable. the difficulty with
+        long-term dependencies arises from the exponentially smaller weights give to long-term interactions compared to
+        short-term ones. We will discuss some approaches to overcoming the problem. 
+        
+        The following methods discuss gated RNNs which are based on the idea of creating paths through time that have
+        derivatives that neither vanish nor explode. Gated RNNs generalize this to connection weights that may change at
+        each time step. Another mechanism that is introduced in gated RNNs is if a sequence is made of subsequences and
+        we need to accumulate evidence inside each sub-sequence, we need a mechanism to forget the old state by setting
+        it to zero. Instead of manually deciding when to clear the state, we want the neural network to learn to decide
+        when to do it. This is what gated RNNs do. 
+
+        \subsubsection{Long Short-Term Memory} \label{sec:LSTM}
+            The clever idea of introducing self-loops to produce paths where the gradient can flow for long durations is
+            a core contribution of the initial LSTM model. A crucial addition has been to make the weight on this
+            self-loop conditioned on the context, rather than fixed. By making the weight of this self-loop gated
+            (controlled by another hidden unit), the time scale of integration can be changed dynamically. This means
+            that even for an LSTM with fixed parameters, the time scale of integration can change based on the input
+            sequence, because the time constants are output by the model itself. 
+
+            \begin{center}  
+                \includegraphics[scale=0.3]{LSTM}
+            \end{center}
+
+            Instead of a unit that simply applies an element-wise nonlinearity to the affine transformation of inputs and
+            recurrent units, LSTM recurrent networks have "LSTM" cells that have an internal recurrence, in addition to
+            the outer recurrence of the RNN. Each cell has the same inputs and outputs as an ordinary recurrent network,
+            but also has more parameters and a system of gating units that controls the flow of information. The most
+            important component is the cell state unit, which has a linear self-loop. Here the self-loop weight is
+            controlled by a forget gate unit. The learning equations for the LSTM cell are as follows:
+
+            \begin{itemize}
+                \item Input gate: $i_t = \sigma(W^{(ii)} \overline{x}_t + W^{(hi)} h_{t-1})$
+                \item Forget gate: $f_t = \sigma(W^{(if)} \overline{x}_t + W^{(hf)} h_{t-1})$
+                \item Output gate: $o_t = \sigma(W^{(io)} \overline{x}_t + W^{(ho)} h_{t-1})$
+                \item Process input: $\overline{c}_t = tanh(W^{(i\overline{c})} + W^{(h\overline{c})} h_{t-1})$
+                \item Cell update: $c_t = f_t * c_{t-1} + i_t + \overline{c}_t$
+                \item Output: $y_t = h_t = o_t * tanh(c_t)$
+            \end{itemize}
+
+        \subsubsection{Gated Recurrent Units} \label{sec:GRU}
+            Not all pieces of the LSTM architecture are actually necessary. The main difference with the LSTM and the
+            GRU is that a single gating unity simultaneously controls the forgetting factor and the decision to update
+            the state unit. The update equations are the following:
+
+            \begin{itemize}
+                \item Reset gate: $r_t = \sigma(W^{(ir)} \overline{x}_t + W^{(hr)}h_{t-1})$
+                \item Update gate: $z_t = \sigma(W^{(iz)} \overline{x}_t + W^{(hz)}h_{t-1})$
+                \item Process input: $\overline{h}_t = tanh(W^{(i\overline{h})} \overline{x}_t + r_t * (W^{(h\overline{h})}h_{t-1}))$
+                \item Hidden state update: $h_t = (1-z_t)*h_{t-1} + z_t * \overline{h}_t$
+                \item Output: $y_t = h_t$
+            \end{itemize}
+
+            The reset and update gates can individually "ignore" parts of the state vector. The update gates act like
+            conditional leaky integrators that can linearly gate any dimension, thus choosing to copy it or completely
+            ignore it by replacing it with the new target state value. The reset gates control which parts of the state
+            get used to compute the next target state, introducing an additional nonlinear effect in the relationship
+            between past state and future state.
+    
+    \subsection{Attention} \label{sec:Attention}
+        Attention is a mechanism for alignment in models where the output and input are of variable-length. This lets us
+        align inputs with their corresponding outputs in applications such as machine translation, image captioning and
+        more. Attention in machine translation is where we align each output word with relevant input words by computing
+        a \hyperref[sec:Softmax]{softmax} of the inputs as follows.
+        
+        Context vector $c_i$: weighted sum of input encodings $h_j$
+        $$ c_i = \sum_j a_{ij}h_j $$
+
+        $a_{ij}$ is an alignment weight between input encoding $h_j$ and output encoding $s_i$.
+        $$ a_{ij} = \frac{exp(alignment(s_i, h_j))}{\sum_{ji} exp(alignment(s_i, h_{j'}))} $$
+
+        Alignment example: $alignment(s_i, h_j) = s^T_i h_j$
 
     \subsection{Training}
         To train a RNN, the trick is to unroll it through time and then use regular \hyperref[sec:Backprop]{back
@@ -2040,6 +2115,8 @@
             Lastly, prediction drift is another challenge when training RNN's. Prediction drift is the idea that predictions
             far into the future will have error from the previous predictions propagated through to it and therefore be
             less accurate.
+
+
 \printindex
 
 \end{document}
