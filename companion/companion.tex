@@ -1971,7 +1971,58 @@
             \begin{center}
                 \includegraphics[scale=0.65]{MemCell}
             \end{center}
-    
+        
+        \subsection{Bi-directional RNN}
+            The recurrent networks we have considered up to now have a "causal" structure, meaning that the state at
+            time $t$ captures only information from the past, and the present input. In many applications, however, we
+            what to output a prediction of $\boldsymbol{y}_t$ that may depend on the \textit{whole input sequence}. For
+            example, in speech recognition, the correct interpretations of the current sound as a phoneme may depend on
+            the new fex phonemes because of co-articulation and may even depend on the next few words because of the
+            linguistic dependencies between nearby words. This is also true of handwriting recognition and many other
+            sequence-to-sequence learning tasks.
+
+            Bidirectional recurrent neural networks were invented to address that need. Bidirectional RNNs combine an
+            rNN that moves forward through time, beginning from the start of the sequence with another RNN that moves
+            backwards through time, beginning from the end of the sequence. 
+            
+    \subsection{Encoder-Decoder Model}
+        Often times when dealing with sequences of data the output sequence is not necessarily the same length as the
+        input sequence. Additionally, sometimes the output is not always a one to one mapping with the input. A good
+        example of this is language translation where translation from english to another language does not guarantee
+        the sentence will be the same length or that the first word in an english sentence matches the first word in the
+        output language. Here we discuss how an RNN can be trained to map an input sequence to an output sequence that
+        is not necessarily of the same length.
+
+        We often call the input to the RNN the context. We want to produce a representation of this context, $C$. The
+        context $C$ might be a vector or sequence of vectors that summarize the input sequence $\boldsymbol{X}$.
+
+        The simplest RNN architecture for mapping a variable-length sequence to another variable-length sequence is the
+        encoder-decoder or sequence-to-sequence architecture. The idea is illustrated with the following items. Let
+        $\boldsymbol{x}^{(i)}$ be the $i^{th}$ input and $\boldsymbol{y}^{(i)}$ by the $i^{th}$ output.
+
+        \begin{itemize}
+            \item An encoder or reader or input RNN processes the input sequence. The encoder emits the context $C$,
+            as a simple function of its final hidden state.
+            \item A decoder or writer or output RNN is conditioned on that fixed-length vector to generate the output
+            sequence $\boldsymbol{Y} = (\boldsymbol{y}^{(1)}, ..., \boldsymbol{y}^{(n_y)})$.
+        \end{itemize}
+
+        \begin{center}
+            \includegraphics[scale=0.65]{encoder-decoder}
+        \end{center}
+
+        The innovation in this kind of architecture is that the lengths of the input ($n_x$) and the outputs ($n_y$)
+        vary from each. Previous architectures constrained $n_x = n_y$. In a sequence-to-sequence architecture, the two
+        RNNs are trained jointly to maximize the average of log $P(\boldsymbol{y}^{(1)}, ..., \boldsymbol{y}_{(n_y)}|
+        \boldsymbol{x}^{(1)}, ... \boldsymbol{x}_{(n_x)})$ over all the pairs of $\boldsymbol{x}$ and $\boldsymbol{y}$
+        sequences in the training set. The last state $\boldsymbol{h}_{n_x}$ of the encoder RNN is typically used as a
+        representation $C$ of the input sequence that is provided as input to the decoder RNN.
+
+        One clear limitation of this architecture is when the context $C$ output by the encoder RNN has a dimension that
+        is too small to properly summarize a long sequence. To adapt to this they proposed to make $C$ a
+        variable-length sequence rather than a fixed-size vector. Additionally, attention mechanisms were introduced to
+        associate elements of the sequence $C$ to elements of the output sequence. 
+
     \subsection{Training}
         To train a RNN, the trick is to unroll it through time and then use regular \hyperref[sec:Backprop]{back
         propagation}. This strategy is called backpropagation through time. The algorithm will also consider weight sharing will also play a part where
