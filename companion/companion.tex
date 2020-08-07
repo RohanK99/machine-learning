@@ -1613,7 +1613,31 @@
         \end{itemize}
 
         \subsubsection{Batch Normalization} \label{sec:BatchNormalization}
-            TODO:
+            Although using the \hyperref[sec:reLU]{reLU} activation function can reduce the danger of
+            vanishing/exploding gradient problem, it doesn't guarantee that it won't come back. Batch Normalization
+            addresses this problem. The technique consists of adding an operation in the model just before or after the
+            activation function of each hidden layer. This operation simply zero-centers and normalizes each input, then
+            scales and shifts the result using two new parameter vectors per layer: one for scaling, the other for
+            shifting. The operations lets the model learnt the optimal scale and mean of each of the layer's inputs. In
+            many cases if you add a BN layer as the very first layer of your neural network, you do not need to
+            standardize your training set; the BN will do it for you. 
+
+            In order to zero-center and normalize the inputs, the algorithm needs to estimate each input's mean and
+            standard deviation. It does so by evaluating the mean and standard deviation fo the input over the current
+            mini-batch.
+            
+            When testing the trained network we need to make predictions for individual instances rather than for
+            batches of instances: in this case, we have no way to compute each input's mean and standard deviation. One
+            solution is to wait till the end of training and run the whole training set through the neural network and
+            compute the mean and standard deviation of each input of the BN layer. However, most implementations of
+            Batch Normalization estimate these final statistics during training by using a moving average of the layer's
+            input means and standard deviations.
+
+            Batch Normalization does, however, add some complexity to the model. Moreover there is a runtime penalty:
+            the neural network makes slow predictions due to the extra computations required at each layer. Fortunately,
+            it's often possible to fuse the BN layer with the previous layer, after training, thereby avoiding the
+            runtime penalty. This is done by updating the previous layer's weights and biases so that it directly
+            produces outputs of the appropriate scale and offset.
 
         \subsubsection{Residual Networks} \label{sec:ResNet}
             Even with \hyperref[sec:reLU]{reLU}, very deep networks suffer from vanishing gradients. Residual Networks
@@ -1678,7 +1702,16 @@
             (1-p_L)]) $$        
         
         \subsubsection{Data Augmentation} \label{sec:DataAugmentation}
-            TODO:
+            Data augmentation artificially increases the size of the training set by generating many realistic variants
+            of each training instance. This reduces overfitting, making this a possible regularization technique. The
+            generated instances should be as realistic as possible,: ideally, given an image from the augmented
+            training set, a human should not be able to tell whether it was augmented or not. 
+
+            Some data augmentation methods are things like, slightly shifting, rotating or resizing every picture in the
+            training set by various amounts and add the resulting pictures to the training set. This forces the model to
+            be more tolerant to variations in the position, orientation, and size of the objects in the pictures. You
+            can also play around with lighting and flip the pictures horizontally. By combining these transformations,
+            you can greatly increase the size of your training set.
 
 \section{Convolutional Neural Networks} \label{sec:CNN}
     Convolutional networks are a specialized king of neural network for processing data that has a known grid-like
