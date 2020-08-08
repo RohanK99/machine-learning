@@ -2116,6 +2116,22 @@
             ignore it by replacing it with the new target state value. The reset gates control which parts of the state
             get used to compute the next target state, introducing an additional nonlinear effect in the relationship
             between past state and future state.
+
+    \subsection{Recursive Neural Networks}
+        Recursive Neural Networks represent a generalization of recurrent neural networks, with a different kind of
+        computational graph, which is structured as a deep tree, rather than chain-like structure of RNNs. Recursive
+        networks have been successfully applied to processing data structures as inputs to neural nets, in natural
+        language processing, as well as in computer vision. 
+
+        \begin{center}
+            \includegraphics[scale=0.65]{RNNTree}
+        \end{center}
+
+        One advantage of recursive nets over recurrent nets is that for a sequence of the same length $\tau$, the depth
+        can be drastically reduced from $\tau$ to $O(log \tau)$, which might help deal with long term dependencies. The
+        key question is how to best structure the tree. One option is to have a tree structure that does not depend on
+        the data. In some application domains, external methods can suggest the appropriate tree structure. Ideally one
+        would like the learner itself to discover and infer the tree structure that is appropriate for any give input.
     
     \subsection{Attention} \label{sec:Attention}
         Attention is a mechanism for alignment in models where the output and input are of variable-length. This lets us
@@ -2149,6 +2165,108 @@
             far into the future will have error from the previous predictions propagated through to it and therefore be
             less accurate.
 
+\section{Transformer Networks}
+    There exist many challenges with \hyperref[sec:RNN]{RNNs} and so Transformer Networks were creating to overcome
+    these challenges. RNNs possessed challenges like having long range dependencies,
+    \hyperref[sec:VanishingProblem]{gradient vanishin and explosion}, large number of training steps, and recurrence
+    prevents parallel computation. Transformer network are able to mitigate or resolve all of these challenges.
+
+    \subsection{Attention Mechanism}
+        We can think about attention as some form of approximation of a SELECT that you would do on a database. If you
+        want to retrieve a value based on a query to find some key. We can think about attention being a neural process
+        that mimics the retrieval of a value $\boldsymbol{v}_i$ for a query $q$ based on a key $k_i$, in a more fuzzy
+        probabilistic way.
+        $$ attention(q, \boldsymbol{k}, \boldsymbol{v}) = \sum_i similarity(q, k_i) \times v_i $$
+
+        We can outline the neural architecture for the attention mechanism as follows.
+
+        \begin{center}
+            \includegraphics[scale=0.4]{AttentionMech}
+        \end{center}
+
+        $s_i$ is the similarity and is commonly computed as the following:
+        \[ s_i = f(q, k_i) \begin{cases} 
+            q^T k_i & \text{dot product} \\
+            \frac{q^T k_i}{\sqrt{d}} & \text{scaled dot product, $d$ is dimensionality} \\
+            q^T \boldsymbol{W} k_i & \text{general dot product} \\
+            w^T_qq + w_k^T k_i & \text{additive similarity}
+        \end{cases}
+        \]
+
+        $a_i$ is the output of the \hyperref[sec:Softmax]{softmax} and can be computed as:
+        $$ a_i = \frac{exp(s_i)}{\sum_j exp(s_j)} $$
+
+        Finally the $*$ is the attention value computed as $\sum_i a_i v_i$.
+
+    \subsection{Architecture}
+        \begin{center}
+            \includegraphics[scale=0.55]{Transformer}    
+        \end{center}
+
+        \subsubsection{Encoder}
+            The path of the data starts from feeding an entire sequence into the encoder. It first goes through
+            positional encoding, which captures the order of the sequence of the input. It then passes to the multi-head
+            attention which is computing the attention between every position and every other position. This treats
+            every input as a query and finds some keys that correspond to the other inputs and take a convex combination
+            of the corresponding values and then take a dot product of that to produce a better embedding. In essence it
+            finds similar inputs and merges them together to form better inputs. Now if we repeat this $N$ times, then
+            in the first iteration we look at pairs and then the next iteration pairs of pairs and so on, so we can find
+            similarities between groups of inputs to create optimal embeddings for sequences. The add and norm layer
+            following the multi-head attention is essentially adding a residual connection that takes the original to
+            what comes out of the multi-head attention and then it normalizes (0 mean and 1 variance) this. The
+            output of this is a sequence of embeddings that captures each input but also the relation to other inputs in
+            the sequence.
+        
+        \subsubsection{Decoder}
+            The decoder is required to produce an output so it is complemented at the top with a softmax and linear
+            layer. The first masked multi-head attention on the decoder side that is used for simply combining output
+            words with previous output words. This is a masked multi-head attention because you want to ensure that you
+            are only generating future words based on the previous words so we "mask" the future words. The other
+            multi-head attention block combines output words with input words and then finally a feed forward neural
+            network again. 
+
+        \subsubsection{Multi-head Attention}
+            Multi-head attention: compute multiple attentions per query with different weights.
+            
+            \begin{center}
+                \includegraphics[scale=0.65]{MultiAttention}
+            \end{center}
+            \begin{align*}
+                & multihead(Q,K,V) = W^o concat(head_1, head_2, ..., head_h) \\
+                & head_i = attention(W_i^QQ, W_i^KK, W_i^VV) \\
+                & attention(Q,K,V) = softmax(\frac{Q^TK}{\sqrt{d_k}})V
+            \end{align*}
+        
+        \subsubsection{Masked Multi-head Attention}
+            Masked multi-head attention is where some values are masked. When decoding, an output value should only
+            depend on previous outputs (not future outputs). Hence we mask future outputs. 
+            \begin{align*}
+                & attention(Q,K,V) = softmax(\frac{Q^TK}{\sqrt{d_k}})V \\
+                & maskedAttention(Q, K, V) = softmax(\frac{Q^TK + M}{\sqrt{d_k}})V \\
+            \end{align*}
+            where $M$ is a mask matrix of 0's and $-\infty$'s
+        
+        \subsubsection{Layer Normalization}
+            The normalization layer exists above every multi-head attention. Essentially what it does is reduce the
+            number of steps required by \hyperref[sec:GD]{gradient descent} to optimize the network. This normalizes the
+            values in each layer to have 0 mean and 1 variance. 
+
+            For each hidden unit $h_i$ we compute
+            $$ h_1 \leftarrow \frac{g}{\sigma}(h_i - \mu)$$
+            where $g$ is a variable and
+            $$ \mu = \frac{1}{H} \sum_{i=1}^{H} h_i $$
+            $$ \sigma = \sqrt{frac{1}{H} \sum_{i=1}^{H} (h_i-\mu)^2}$$
+
+            This reduces covariate shift (gradient dependencies between each layer) and therefore fewer training
+            iterations are needed.
+
+        \subsubsection{Positional Embedding}
+            The attention mechanism does not care about the position of the input, they could be all shuffled, if it
+            wasn't for the positional embedding we could get the same output. The ordering carries meaning in many cases
+            and so we use this positional encoding to keep track of this ordering.
+
+            $$ PE_{position,2i} = sin(position/10000^{2i/d}) $$
+            $$ PE_{position,2i+1} = cos(position/10000^{2i/d}) $$
 
 \printindex
 
