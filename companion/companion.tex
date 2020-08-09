@@ -2268,6 +2268,97 @@
             $$ PE_{position,2i} = sin(position/10000^{2i/d}) $$
             $$ PE_{position,2i+1} = cos(position/10000^{2i/d}) $$
 
+\section{Autoencoder}
+    An autoencoder is a special type of feed forward neural network used for:
+    \begin{itemize}
+        \item Compression
+        \item Denoising
+        \item Sparse Representation
+        \item Data Generation
+    \end{itemize}
+
+    An autoencoder is a neural network that is trained to attempt to copy its input to its output. Internally, it has a
+    hidden layer $\boldsymbol{h}$ that describes a code used to represent the input. The network consists of tow parts: an encoder
+    function $\boldsymbol{h} = f(\boldsymbol{x})$ and a decoder that produces a reconstruction $\boldsymbol{r} =
+    g(\boldsymbol{h})$.
+    
+    \subsection{Linear Autoencoder}
+        Let $f$ and $g$ be linear and their respective weight matrices be $\boldsymbol{W}_f$ and $\boldsymbol{W}_g$. We
+        then represent the network as below where $\boldsymbol{h} = \boldsymbol{W}_f \boldsymbol{x}$ and $\tilde{X} =
+        \boldsymbol{W}_g \boldsymbol{h}$.
+
+        \begin{center}
+            \includegraphics[scale=0.5]{LinearAutoEnc}
+        \end{center}
+
+        Objective: find weights $\boldsymbol{W}_f$ and $\boldsymbol{W}_g$ that minimize the reconstruction error
+        $$ min_{\boldsymbol{w}} \frac{1}{2} \sum_n \| \boldsymbol{W}_g \boldsymbol{W}_f \boldsymbol{x}_n -
+        \boldsymbol{x}_n \|^2_2$$
+
+        We can use \hyperref[sec:Backprop]{back propagation} to train the neural network. When using Euclidean Norm (i.e
+        squared loos), the solution is the same as \hyperref[sec:PCA]{principal component analysis (PCA)}.
+    
+        \subsubsection{Principal Component Analysis} \label{sec:PCA}
+            PCA is typically used to project higher dimensional data and map it on to a lower dimensional hyper plane such that it
+            preserves as much as possible variations in the data. In principle this means we could reconstruct the
+            original data as closely as possible.
+    
+    \subsection{Non-linear Autoencoder}
+        Let $f$ and $g$ be non-linear functions then we can represent the objective as:
+        $$ min_{\boldsymbol{w}} \frac{1}{2} \sum_n \| g(f(\boldsymbol{x}_n; \boldsymbol{W}_f); \boldsymbol{W}_g) -
+        \boldsymbol{x}_n \|^2_2$$
+
+        The hidden nodes in a non-linear autoencoder represent a non-linear manifold. What we are doing by computing some hidden representation here would be to take our data and project it on to a
+        lower dimensional space that is not linear anymore because I allow myself to have non-linear mappings. 
+    
+    \subsection{Deep Autoencoders}
+        In deep autoencoders we have multiple layers ($f$) before we reach the hidden layers and we have multiple layers
+        ($g$) to reconstruct as well. In theory, one hidden layer in $f$ and $g$ is sufficient to represent any possible
+        compression, however, multiple layers in $f$ and $g$ is often better.
+    
+    \subsection{Regularizing Autoencoders}
+        \subsubsection{Sparse Representations}
+            When there are more hidden nodes than inputs, we need to use regularization to constrain the autoencoder. We
+            can do this by forcing the hidden nodes to be sparse:
+            $$ min_{\boldsymbol{w}} \frac{1}{2} \sum_n \| g(f(\boldsymbol{x}_n; \boldsymbol{W}_f); \boldsymbol{W}_g) -
+            \boldsymbol{x}_n \|^2_2 + c \: nnz(f(\boldsymbol{x}_n; \boldsymbol{W}_f))$$
+            where $nnz(f(\boldsymbol{x}_n; \boldsymbol{W}_f))$is the number of non-zero entries in the vector produced
+            by $f$.
+        
+            Approximate objective: L1 regularization becomes:
+            $$ min_{\boldsymbol{w}} \frac{1}{2} \sum_n \| g(f(\boldsymbol{x}_n; \boldsymbol{W}_f); \boldsymbol{W}_g) -
+            \boldsymbol{x}_n \|^2_2 + c \| f(\boldsymbol{x}_n; \boldsymbol{W}_f) \|_1 $$
+        
+        \subsubsection{Denoising Autoencoders}  
+            Let us consider the noisy version $\tilde{\boldsymbol{x}}$ of the input $\boldsymbol{x}$. Then we can
+            denoise the data with the following objective.
+
+            $$ min_{\boldsymbol{w}} \frac{1}{2} \sum_n \| g(f(\boldsymbol{\tilde{x}}_n; \boldsymbol{W}_f); \boldsymbol{W}_g) -
+            \boldsymbol{x}_n \|^2_2 + c \| f(\boldsymbol{\tilde{x}}_n; \boldsymbol{W}_f) \|_1 $$
+        
+    \subsection{Probabilistic Autoencoder}
+        Probabilistic or stochastic encoders have interesting properties that allow us to generate data. We can express
+        an probabilistic autoencoder as follows. Let $f$ and $g$ represent conditional distributions $f:
+        P(\boldsymbol{h}|\boldsymbol{x}; \boldsymbol{W}_f)$ and $g: P(\boldsymbol{x}|\boldsymbol{h}; \boldsymbol{W}_g)$.
+        The encoder is essentially a conditional distribution over the intermediate representation and the decoder is a
+        conditional with respect to the input we are trying to produce. We can use sigmoid, softmax at the hidden and
+        output layers to output classifications based on distributions of data. 
+
+        \subsubsection{Generative Model}
+            Based on probabilistic autoencoders we use this architecture to generate new data. If we want to generate
+            new data points that are similar to the data point we had in the data set then the beauty of having a
+            distribution is that we can sample from distribution over the intermediate representation $\boldsymbol{h}$.
+            Then for every point $h$ we sampled we can produce some output. The formal steps are as follows
+
+            \begin{itemize}
+                \item Sample $\boldsymbol{h}$ from some distribution $P(\boldsymbol{h})$.
+                \item Sample $\boldsymbol{x}$ from decoder $P(\boldsymbol{x}|\boldsymbol{h}; \boldsymbol{W}_g)$
+            \end{itemize}
+
+            The one underlying problem with this is that we need some distribution that we can sample from. This
+            distribution is conditioned on $\boldsymbol{X}$ so the new data generated we are producing is still going to be
+            relativisitically similar to the input data.  
+            
 \printindex
 
 \end{document}
