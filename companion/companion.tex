@@ -2344,7 +2344,7 @@
         conditional with respect to the input we are trying to produce. We can use sigmoid, softmax at the hidden and
         output layers to output classifications based on distributions of data. 
 
-        \subsubsection{Generative Model}
+        \subsubsection{Generative Model} \label{sec:ProbGenModel}
             Based on probabilistic autoencoders we use this architecture to generate new data. If we want to generate
             new data points that are similar to the data point we had in the data set then the beauty of having a
             distribution is that we can sample from distribution over the intermediate representation $\boldsymbol{h}$.
@@ -2357,8 +2357,125 @@
 
             The one underlying problem with this is that we need some distribution that we can sample from. This
             distribution is conditioned on $\boldsymbol{X}$ so the new data generated we are producing is still going to be
-            relativisitically similar to the input data.  
+            relativisitically similar to the input data.
+
+\section{Generative Networks}
+    Generative Networks are is a learning task that involves automativally discovering and learning the regularities of
+    patterns in input data in such a way that the model can be used to generate or output new data that could have been
+    drawn from the original dataset.
+
+    \subsection{Variational Autoencoder}
+        Variational autoencoders were created to combat the problem of \hyperref[sec:ProbGenModel]{generative modelling}
+        using probabilistic autoencoders. The idea behind a variational autoencoder is to train an encoder
+        $P(\boldsymbol{h}|\boldsymbol{x}; \boldsymbol{W}_f)$ to approach a simple and fixed distribution e.g.
+        $N(\boldsymbol{h}; 0, \boldsymbol{I})$. This way we can set the prior distribution $P(\boldsymbol{h})$ to $N(\boldsymbol{h};
+        0, \boldsymbol{I})$.
+
+        We construct the objective
+        $$ max_{\boldsymbol{w}} \sum_{n} log P(\boldsymbol{x}_n; \boldsymbol{W}_f, \boldsymbol{W}_g) - c \:
+        KL(P(\boldsymbol{h}|\boldsymbol{x}_n; \boldsymbol{W}_f) || N(\boldsymbol{h}; 0, \boldsymbol{I}))$$
+        where the first part essentially tries to maximize the probability of reconstructing $\boldsymbol{x}$ and the
+        second part is some sort of regularization term. The second part tries to make sure that our encoder has a
+        distribution over $\boldsymbol{h}$ conditioned on $\boldsymbol{x}$ that is as close as possible to the fixed
+        distribution $N(\boldsymbol{h}; 0, \boldsymbol{I})$. 
+
+        \subsubsection{Evaluation}
+            How do we compute $P(\boldsymbol{x}_n; \boldsymbol{W}_f, \boldsymbol{W}_g)$?
+
+            $$ \operatorname{P}\left(\boldsymbol{x}_{n} ; \boldsymbol{W}_{f},
+            \boldsymbol{W}_{g}\right)=\int_{\boldsymbol{h}} \operatorname{P}\left(\boldsymbol{x}_{n} \mid
+            \boldsymbol{h} ; \boldsymbol{W}_{g}\right) \operatorname{P}\left(\boldsymbol{h} \mid \boldsymbol{x}_{n} ;
+            \boldsymbol{W}_{f}\right) d \boldsymbol{h} $$
+
+            since $\operatorname{P}\left(\boldsymbol{h} \mid \boldsymbol{x}_{\boldsymbol{n}} ;
+            \boldsymbol{W}_{f}\right)$ should approach $N(\boldsymbol{h} ; 0, \boldsymbol{I})$
+            then force $\operatorname{P}\left(\boldsymbol{h} \mid \boldsymbol{x}_{\boldsymbol{n}} ; \boldsymbol{W}_{f}\right)$ to be Gaussian
             
+            $$ \operatorname{P}\left(\boldsymbol{h} \mid \boldsymbol{x}_{n} ;
+            \boldsymbol{W}_{f}\right)=N\left(\boldsymbol{h} ; \mu_{n}\left(\boldsymbol{x}_{n} ;
+            \boldsymbol{W}_{f}\right), \sigma_{n}\left(\boldsymbol{x}_{n} ; \boldsymbol{W}_{f}\right)
+            \boldsymbol{I}\right) $$
+            
+            where the mean $\mu_n$ and variance $\sigma_n$ are obtained by a neural net in $\boldsymbol{x}_n$
+            parameterized by $\boldsymbol{W}_f$. Now we approximate the integral over $\boldsymbol{h}$
+            $$
+            \begin{array}{l}
+            \operatorname{P}\left(\boldsymbol{x}_{n} ; \boldsymbol{W}_{f}, \boldsymbol{W}_{\boldsymbol{g}}\right) \\
+            =\int_{\boldsymbol{h}} \operatorname{P}\left(\boldsymbol{x}_{n} \mid \boldsymbol{h} ; \boldsymbol{W}_{g}\right) N\left(\boldsymbol{h} ;
+             \mu_{n}\left(\boldsymbol{x}_{n} ; \boldsymbol{W}_{f}\right), \sigma_{n}\left(\boldsymbol{x}_{n} ; \boldsymbol{W}_{f}\right) 
+             \boldsymbol{I}\right) d \boldsymbol{h}
+            \end{array}
+            $$
+            by a single sample
+            $$ \operatorname{P}\left(\boldsymbol{x}_{n} ; \boldsymbol{W}_{f}, \boldsymbol{W}_{\boldsymbol{g}}\right)
+            \approx \operatorname{P}\left(\boldsymbol{x}_{n} \mid \boldsymbol{h}_{n} ; \boldsymbol{W}_{g}\right) $$
+            
+            where $\boldsymbol{h}_{n} \sim N\left(\boldsymbol{h} ; \mu_{n}\left(\boldsymbol{x}_{n} ;
+            \boldsymbol{W}_{f}\right), \sigma_{n}\left(\boldsymbol{x}_{n} ; \boldsymbol{W}_{f}\right)
+            \boldsymbol{I}\right)$
+        
+        \subsubsection{Training}
+            When doing training we want to do \hyperref[sec:GD]{gradient descent}, however, since we are taking a single
+            sample between the encoder and decoder we can't use gradient descent through the entire network. Instead
+            the key hear is that we want to use reparameterization so that we first sample from a different
+            distribution, perform some operations on the sample until it becomes effectively a sample from the
+            distribution that I was initially interested in. By doing this, when gradient is performed instead of having
+            to propagate over a sampling step it is now a combination of mathematical operators over which it is
+            traversing.
+            
+    \subsection{Generative Adverserial Networks} \label{sec:GAN}
+        GAN's are generative networks with an approach based on game theory they consist of two networks:
+        
+        \begin{itemize}
+            \item Generator $g\left(\boldsymbol{z} ; \boldsymbol{W}_{g}\right) \rightarrow \boldsymbol{x}$
+            \item Discriminator $d\left(\boldsymbol{x} ; \boldsymbol{W}_{d}\right) \rightarrow \operatorname{P}(\boldsymbol{x}$ is real )
+        \end{itemize}
+
+        The generator is responsible of generating new datapoints. The discriminator's job is to predict whether some
+        data point is real or not, it is basically providing feedback to the generator whether the produced data point
+        is real or not.
+        
+        The objective:
+        $$ \min _{W_{g}} \max _{\boldsymbol{W}_{d}} \sum_{n} \log \operatorname{P}\left(\boldsymbol{x}_{n}\right. \text{is
+        real;} \left.\boldsymbol{W}_{d}\right)+\log \operatorname{P}\left(g\left(\mathbf{z}_{n} ;
+        \boldsymbol{W}_{g}\right)\right. \text{is fake;} \boldsymbol{W}_{d} ) $$
+        $$ \begin{array}{l} = \min _{\boldsymbol{w}_{g}} \max _{\boldsymbol{W}_{d}} \sum_{n} \log
+        d\left(\boldsymbol{x}_{\boldsymbol{n}} ; \boldsymbol{W}_{d}\right)+\log \left(1-d\left(g\left(\mathbf{z}_{n} ;
+        \boldsymbol{W}_{g}\right) ; \boldsymbol{W}_{d}\right)\right)\end{array} $$
+
+        In this objective the discriminator is going to maximize the probability with which it can recognize data points
+        from our training set as being real and it is also going to try to maximize the probability that the data points
+        that are generated by the generator are fake. If it can distinguish between real data points and fake data
+        points then it is still able to pick out some differences and that is what it will try to achieve. The generator
+        is trying to fool the discriminator so it will try to minimize these probabilities.
+
+        \subsubsection{Training}
+            Repeat until convergence
+            \begin{itemize}
+                \item For k steps do \begin{itemize}
+                    \item Sample $\boldsymbol{z}_{1}, \ldots, \boldsymbol{z}_{N}$ from $P(\boldsymbol{z})$
+                    \item Sample $\boldsymbol{x}_{1}, \ldots, \boldsymbol{x}_{N}$ from training set
+                    \item Update discriminator by ascending its stochastic gradient 
+                    $$ \nabla_{\boldsymbol{W}_{d}}\left(\frac{1}{N} \sum_{n=1}^{N}\left[\log
+                    d\left(\boldsymbol{x}_{\boldsymbol{n}} ; \boldsymbol{W}_{d}\right)+\log
+                    \left(1-d\left(g\left(\mathbf{z}_{n} ; \boldsymbol{W}_{g}\right) ;
+                    \boldsymbol{W}_{d}\right)\right)\right]\right) $$
+                \end{itemize}
+                \item Sample $\boldsymbol{z}_{1}, \ldots, \boldsymbol{z}_{N}$ from $P(\boldsymbol{z})$
+                \item Update generator by descending its stochastic gradient
+                $$ \nabla_{\boldsymbol{W}_{g}}\left(\frac{1}{N} \sum_{n=1}^{N} \log \left(1-d\left(g\left(\mathbf{z}_{n} ;
+                \boldsymbol{W}_{g}\right) ; \boldsymbol{W}_{d}\right)\right)\right) $$
+            \end{itemize}
+
+            In the end we are looking for a distribution that corresponds to the true data distribution and so in the
+            limit we would like the generator to have a distribution over the space of data to be the same as the
+            distribution as that of the training set. $P(\boldsymbol{x}|\boldsymbol{z}; \boldsymbol{W}_g)$ should be
+            equal to our true data distribution and similarly the discriminator should have a 50 \% confidence about its
+            prediction of real or fake data; $P(\boldsymbol{x} \text{is real}; \boldsymbol{W}_d) = 0.5$.
+            
+            Problems with this in practice are that there may be a training imbalance where one network may dominate the
+            other and also there is a risk of local convergence. 
+
 \printindex
 
 \end{document}
