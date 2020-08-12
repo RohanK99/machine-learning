@@ -2409,7 +2409,7 @@
             by a single sample
             $$ \operatorname{P}\left(\boldsymbol{x}_{n} ; \boldsymbol{W}_{f}, \boldsymbol{W}_{\boldsymbol{g}}\right)
             \approx \operatorname{P}\left(\boldsymbol{x}_{n} \mid \boldsymbol{h}_{n} ; \boldsymbol{W}_{g}\right) $$
-            
+
             where $\boldsymbol{h}_{n} \sim N\left(\boldsymbol{h} ; \mu_{n}\left(\boldsymbol{x}_{n} ;
             \boldsymbol{W}_{f}\right), \sigma_{n}\left(\boldsymbol{x}_{n} ; \boldsymbol{W}_{f}\right)
             \boldsymbol{I}\right)$
@@ -2471,10 +2471,101 @@
             limit we would like the generator to have a distribution over the space of data to be the same as the
             distribution as that of the training set. $P(\boldsymbol{x}|\boldsymbol{z}; \boldsymbol{W}_g)$ should be
             equal to our true data distribution and similarly the discriminator should have a 50 \% confidence about its
-            prediction of real or fake data; $P(\boldsymbol{x} \text{is real}; \boldsymbol{W}_d) = 0.5$.
+            prediction of real or fake data; $P(\boldsymbol{x} \; \text{is real}; \boldsymbol{W}_d) = 0.5$.
             
             Problems with this in practice are that there may be a training imbalance where one network may dominate the
             other and also there is a risk of local convergence. 
+
+\section{Ensemble Learning}
+    Sometimes individual learning techniques yields a different hypothesis and none of them are perfect. The idea here
+    with ensemble learning is to combine multiple imperfect hypothesis to form a better hypothesis. The intuition here
+    is that individuals often make mistakes, but the "majority" is less likely to make mistakes. Individuals can also
+    pool knowledge together to make better decisions.
+
+    \subsection{Formulation}
+        Ensemble learning is the method of selecting and combining and ensemble of hypotheses into a better hypothesis.
+        This allows us to enlarge the hypothesis space: when we have a pereceptrons we have linear separators but with
+        an ensemble of perceptrons we get a polytope.
+    
+    \subsection{Bagging}
+        The idea behind bagging is that we have a pool of hypotheses $h$ that are fed an input $\boldsymbol{x}$. We then
+        set the output to be the majority output from the pool of hypotheses. To formulate this we make the assumption
+        that each $h_i$ makes error with probability $p$ and that each hypothesis is independent. We can them compute
+        the following probabilities.
+        
+        \begin{itemize}
+            \item $k$ hypotheses make an error: $\begin{pmatrix} n \\ k \end{pmatrix} p^k(1-p)^{(n-k)}$
+            \item Majority makes an error: $\sum_{k>n/2} \begin{pmatrix} n \\ k \end{pmatrix} p^k(1-p)^{(n-k)}$
+            \item With $n=5, p=0.1 \rightarrow err(majority) < 0.01$
+        \end{itemize}
+
+        \subsubsection{Weighted Majority}
+            In practice the above is rarely the case. Hypotheses are rarely independent and some hypotheses have less
+            than others. One way to tackle this problem is taking a weighted majority instead. The intuition being we
+            can decrease the weight of correlated hypotheses and increase the weight of the good hypotheses.
+        
+    \subsection{Boosting}
+        Boosting is a popular ensemble learning technique that computes a weighted majority and it obtains hypotheses by
+        using a base learning technique that produces classifiers. The base learner can be a weak learner (bad learning
+        technique) and by pooling a lot of the resulting hypotheses we can obtain a higher accuracy and effectively
+        boost the weak learner. The idea here is to boost weak learners and compensate for their weakness to increase
+        accuracies. The way to do this in practice is by reweighting the training set, the weak learner will take the
+        original dataset produce a hypothesis and then we will perturb the dataset and the weak learner will produce a
+        new hypothesis. We then repeat till we are satisfied. The intuition behind this is that if have some instances
+        that are misclassified by one hypothesis then we increase their weight: make them more important so that the
+        next time around the algorithm a better chance to classify those instances correctly.
+
+        We can boost anything that is weak learner which is classified as something that produces hypotheses that
+        are at least as good as random classifiers (50\%). It also has the following advantages:
+
+        \begin{itemize}
+            \item No need to learn perfect hypothesis
+            \item Can boost any weak learning algorithm
+            \item Boosting is simple to program
+            \item Good generalization
+        \end{itemize}
+
+        \subsubsection{Weighted Training Set}
+            The main principle behind boosting is learning with a weighted training set. We will use supervised learning
+            to minimize the train error and apply a bias algorithm to learn correctly the instances with high weights.
+
+            The idea is that when an instance is misclassified by a hypothesis, we are going to increase its weight so
+            that the next hypothesis is more likely to classify it correctly.
+
+        \subsubsection{Boosting Framework}
+            \begin{itemize}
+                \item Set all instance weights $\boldsymbol{w}_x$ to 1.
+                \item Repeat until sufficient nnumber of hypotheses
+                \begin{itemize}
+                    \item $h_i \leftarrow$ learn(dataset, weights)
+                    \item Increase $\boldsymbol{w}_x$ of misclassified instances $\boldsymbol{x}$
+                \end{itemize}
+            \end{itemize}
+            Ensemble hypothesis is the weighted majority of $h_i$'s with weights $\boldsymbol{w}_i$ proportional to the
+            accuracy of $h_i$.
+
+        \subsubsection{Adaptive Boosting} \label{sec:AdaBoost}
+            Let $w$ be the vector of $N$ instance weights and $z$ be the vector of $M$ hypothesis weights. 
+
+            \begin{itemize}
+                \item $w_j \leftarrow \frac{1}{N} \forall_j $
+                \item For $m=1$ to $M$ do
+                \begin{itemize}
+                    \item $h_m \leftarrow$ learn(dataset, $w$)
+                    \item err $\leftarrow 0$
+                    \item For each ($x_j$, $y_j$) in dataset do
+                    \begin{itemize}
+                        \item if $h_m(x_j) \neq y_j$ then err $\leftarrow err + w_j$
+                    \end{itemize}
+                    \item For each ($x_j$, $y_j$) in dataset do
+                    \begin{itemize}
+                        \item if $h_m(x_j) \neq y_j$ then $w_j \leftarrow$ $err / (1-err)$
+                    \end{itemize}
+                    \item $w \leftarrow normalize(w)$
+                    \item $z_m \leftarrow log[(1-err)/err]$
+                \end{itemize}
+                \item Return $weighted-majority(h,z)$
+            \end{itemize}            
 
 \printindex
 
