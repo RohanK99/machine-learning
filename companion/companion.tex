@@ -2503,7 +2503,34 @@
             In practice the above is rarely the case. Hypotheses are rarely independent and some hypotheses have less
             than others. One way to tackle this problem is taking a weighted majority instead. The intuition being we
             can decrease the weight of correlated hypotheses and increase the weight of the good hypotheses.
-        
+
+        \subsubsection{Independent Classifiers/Predictors}
+            If we want to obtain independent classifiers/predictors for bagging we can try one of two things. Boostrap
+            sample and random projection. 
+            
+            Boostrap sampling involves sampling (without replacement) a subset of the
+            data. Each time we train a base learner to produce a hypothesis then the hypothesis produced will have less
+            correlation with the other hypotheses because they are trained on a subset of the data. 
+
+            Similarly a method that does this with the features is called random projection. The idea is that we have a
+            set of features and normally we want to use all the features when making a prediction, however, instead we
+            can subsample the features to obtain predictors with less correlation. 
+
+            With bootsrap sampling and random projection we learn different classifiers/predictors based on each data
+            subset and feature subset. 
+
+            \paragraph{Algorithm}
+                \begin{itemize}
+                    \item For $k=1$ to $K$
+                    \begin{itemize}
+                        \item $\boldsymbol{D}_k \leftarrow$ sample data subset
+                        \item $\boldsymbol{F}_k \leftarrow$ sample feature subset
+                        \item $h_k \leftarrow$ train classifier/predictor based on $\boldsymbol{D}_k$ and $\boldsymbol{F}_k$
+                    \end{itemize}                    
+                    \item Classification: $majority(h_1(\boldsymbol{x}), ..., h_k(\boldsymbol{x}))$
+                    \item Regression: $average(h_1(\boldsymbol{x}), ..., h_k(\boldsymbol{x}))$
+                \end{itemize}
+
     \subsection{Boosting}
         Boosting is a popular ensemble learning technique that computes a weighted majority and it obtains hypotheses by
         using a base learning technique that produces classifiers. The base learner can be a weak learner (bad learning
@@ -2545,7 +2572,8 @@
             accuracy of $h_i$.
 
         \subsubsection{Adaptive Boosting} \label{sec:AdaBoost}
-            Let $w$ be the vector of $N$ instance weights and $z$ be the vector of $M$ hypothesis weights. 
+            Let $w$ be the vector of $N$ instance weights and $z$ be the vector of $M$ hypothesis weights. This
+            algorithm is used in the context of classification.
 
             \begin{itemize}
                 \item $w_j \leftarrow \frac{1}{N} \forall_j $
@@ -2565,8 +2593,43 @@
                     \item $z_m \leftarrow log[(1-err)/err]$
                 \end{itemize}
                 \item Return $weighted-majority(h,z)$
-            \end{itemize}            
+            \end{itemize}
+        
+        \subsubsection{Gradient Boosting}
+            Gradient boosting is a method designed to do boosting for regression. The idea is we start with a predictor
+            $f$ that is a regression technique (hypothesis/function) that makes a prediction for some input. The
+            predictor $f_k$ incurs loss $L(f_k(\boldsymbol{x}, y))$ at stage $k$.
 
+            Given the loss function we want to compute the negative gradient of the loss function with respect to the
+            current predictor $f_k$. The idea is then to fit the next predictor to this negative gradient. We train
+            $h_{k+1}$ to approximate the negative gradient:
+
+            $$h_{k+1}(\boldsymbol{x}) \approx -\frac{\partial L(f_k{\boldsymbol{x}}, y)}{\partial f_k(\boldsymbol{x})}$$ 
+
+            Now we can update the predictor by adding a multiple $\alpha_{k+1}$ of $h_{k+1}$ to simulate gradient
+            descent since we are adding a multiple of the gradient which we are approximating with $h_{k+1}$.
+            $$ f_{k+1}{\boldsymbol{x}} \leftarrow f_k(\boldsymbol{x}) + \alpha_{k+1}h_{k+1}(\boldsymbol{x}) $$
+
+            The base learner $h_{k+1}$ can be any non-linear predictor and is often a small decision tree.
+
+            \paragraph{Algorithm}
+                \begin{itemize}
+                    \item Initialize predictor with a constant $c:$
+                    $$f_{0}\left(\boldsymbol{x}_{n}\right)=\operatorname{argmin}_{c} \sum_{n} L\left(c, y_{n}\right)$$
+                    \item For $k=1$ to $K$ do
+                    \begin{itemize}
+                        \item Compute pseudo residuals: $r_{n}=-\frac{\partial L\left(f_{k-1}\left(x_{n}\right), y_{n}\right)}{\partial f_{k-1}\left(x_{n}\right)}$
+                        \item Train a base learner $h_{k}$ with residual dataset $\left\{\left(\boldsymbol{x}_{n}, r_{n}\right)_{\forall n}\right\}$
+                        \item Optimize step length:
+                        $$
+                        \eta_{k}=\operatorname{argmin}_{\eta} \sum_{n} L\left(f_{k-1}\left(\boldsymbol{x}_{n}\right)+\eta h_{k}\left(\boldsymbol{x}_{n}\right), y_{n}\right)
+                        $$
+                        \item Update predictor: $f_{k}(\boldsymbol{x}) \leftarrow f_{k-1}(\boldsymbol{x})+\eta_{k} h_{k}(\boldsymbol{x})$
+                    \end{itemize}
+                \end{itemize}
+
+                This algorithm is still prone to overfitting. We can reduce overfitting by incorporating a validation
+                and stopping when the loss starts increasing. 
 \printindex
 
 \end{document}
