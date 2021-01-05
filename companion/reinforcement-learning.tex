@@ -1,0 +1,107 @@
+\documentclass[12pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin = 1in]{geometry}
+\usepackage[english]{babel}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{changepage}
+\usepackage[makeindex]{imakeidx}
+\usepackage{titlesec}
+\usepackage{textcomp}
+\usepackage{graphicx}
+\usepackage{gensymb}
+\usepackage{xcolor, soul}
+\usepackage{hyperref}
+\usepackage{pgfplots}
+\usepackage{parskip}
+
+\graphicspath{ {./images/} }
+
+\definecolor{linkColour}{RGB}{140, 25, 57}
+\definecolor{urlColour}{RGB}{137, 62, 27}
+
+\setcounter{section}{-1}
+\setcounter{secnumdepth}{4}
+
+\titleformat{\paragraph}
+{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+\titlespacing*{\paragraph}
+{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+
+\hypersetup{colorlinks, citecolor=purple, filecolor=purple, linkcolor=linkColour, urlcolor=urlColour}
+
+\makeindex
+
+\newenvironment{fact*}[2][]
+    {
+    \begin{adjustwidth}{1em}{0em}
+    \noindent
+    \textbf{#2} \hfill #1
+    
+    \vspace{0.1in}
+    \noindent
+    \ignorespaces
+    } {
+    \end{adjustwidth}
+    }
+
+\newenvironment{fact}[2][]
+    {
+    \index{#2}
+    \hypertarget{#2}{\vspace{0.2in}}
+    \begin{adjustwidth}{1em}{0em}
+    \noindent
+    \textbf{#2} \hfill #1
+    
+    \vspace{0.1in}
+    \noindent
+    \ignorespaces
+    } {
+    \end{adjustwidth}
+    }
+
+\title{Companion to Reinforcement Learning}
+\author{Rohan Kumar}
+\date{}
+
+\begin{document}
+
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+
+\section{Notation}
+    \subsection{Data}
+    \begin{flalign*}
+        \boldsymbol{x} &= \begin{pmatrix} x_1 \\ x_2 \\ ... \\ x_M \end{pmatrix} \text{: data point corresponding to a
+        column vector of $M$ features} & \\
+        \overline{\boldsymbol{x}} &= \begin{pmatrix} 1 \\ x_1 \\ x_2 \\ ... \\ x_M \end{pmatrix} \text{: concatenation
+        of 1 with the vector} \boldsymbol{x} & \\
+        \boldsymbol{X} &= \begin{pmatrix} x_{1,1} & ... & x_{1,N} \\ ... & ... & ... \\ x_{M,1} & ... & x_{M,N}
+        \end{pmatrix} \text{: dataset consisting of $N$ data points and $M$ features} & \\
+        \overline{\boldsymbol{X}} &= \begin{pmatrix} 1 & ... & 1 \\ x_{1,1} & ... & x_{1,N} \\ ... & ... & ... \\
+        x_{M,1} & ... & x_{M,N} \end{pmatrix} \text{: concatenation of a vector of 1's with the matrix } \boldsymbol{X}
+        & \\
+        y &= \text{: output target (regression) or label (classification)} & \\
+        \boldsymbol{y} &= \begin{pmatrix} y_1 \\ y_2 \\ ... \\ y_N \end{pmatrix} \text{: vector of outputs for a dataset
+        of $N$ points} & \\
+        \boldsymbol{x}_* &= \text{: test input / unknown input } & \\
+        \boldsymbol{y}_* &= \text{: predicted output} & \\
+        N &= \text{: Number of data points in the dataset} & \\
+        M &= \text{: Number of a features in a data point} & \\
+        \boldsymbol{w} &= \begin{pmatrix} w_1 \\
+            w_2 \\
+            ... \\
+            w_M \\
+        \end{pmatrix} & \\
+        \boldsymbol{w}^T &= (w_1, w_2, ..., w_M) \text{ or } (w_0, w_1, w_2, ..., w_M) \text{ $w_0$ multiplies the first
+        entry of $\overline{\boldsymbol{x}}$ (bias)} & \\
+    \end{flalign*}
+    Note: bold symbols represents a vector
+
+\printindex
+
+\end{document}
