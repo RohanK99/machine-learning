@@ -129,84 +129,83 @@
     Note: bold symbols represents a vector
 
 \section{Introduction}
+    \subsection{What is Machine Learning}
+        Machine Learning is the field of study that gives computers the ability to learn from data without being explicitly
+        programmed. This is good for problems that require a lot of fine-tuning or for which using a traditional approach
+        yields no good solution. Machine Learning's data dependency allows it to adapt to new data and gain insight for
+        complex problems and large amounts of data.
 
-\subsection{What is Machine Learning}
-    Machine Learning is the field of study that gives computers the ability to learn from data without being explicitly
-    programmed. This is good for problems that require a lot of fine-tuning or for which using a traditional approach
-    yields no good solution. Machine Learning's data dependency allows it to adapt to new data and gain insight for
-    complex problems and large amounts of data.
-
-\subsection{Applications of Machine Learning}
-    Machine Learning can be used for a range of tasks and can be seen used in:
-    \begin{itemize}
-        \item Analyzing images of products on a production line to automatically classify them (Convolutional Neural
-        Net)
-        \item Forecasting company revenue based on performance metrics (Regression or Neural Net)
-        \item Automatically classifying news articles (NLP using Recurrent Neural Networks)
-        \item Summarizing long documents automatically (Natural Language Processing)
-        \item Building intelligent bot for a game (Reinforcement Learning)
-    \end{itemize}
-
-\subsection{Types of Machine Learning}
-    \subsubsection{Supervised Learning}
-        In supervised learning, the training set you feed to the algorithm includes the desired solutions, called
-        labels. (e.g determining if an email is spam would be trained a dataset of example emails labelled as spam or
-        not spam.) \\[0.1in] 
-        Some commonly used supervised learning algorithms are:
+    \subsection{Applications of Machine Learning}
+        Machine Learning can be used for a range of tasks and can be seen used in:
         \begin{itemize}
-            \item \hyperref[sec:KNN]{k-Nearest Neighbors}
-            \item \hyperref[sec:LinearRegression]{Linear Regression}
-            \item \hyperref[sec:LogisticRegression]{Logistic Regression}
-            \item Support Vector Machines (SVMs)
-            \item Decision Trees and Random Forests
-            \item Neural Networks
-        \end{itemize}
-    
-    \subsubsection{Unsupervised Learning}
-        In unsupervised learning, the training data is unlabeled and the system tries to learn without guidance. The
-        system will try and automatically draw inferences and conclusions about the data and group it as such. (e.g.
-        having a lot of data about blog visitors. Using a clustering algorithm we can group and detect similar
-        visitors). \\[0.1in]
-        Some important unsupervised learning algorithms are:
-        \begin{itemize}
-            \item Clustering
-            \begin{itemize}
-                \item K-Means
-                \item DBSCAN
-                \item Hierarchical Cluster Analysis
-            \end{itemize}
-            \item Anomaly detection and novelty detection
-            \begin{itemize}
-                \item One-class SVM
-                \item Isolation Forest
-            \end{itemize}
-            \item Visualization and dimensionality reduction
-            \begin{itemize}
-                \item Principal Component Analysis (PCA)
-                \item Kernel PCA
-                \item Locally Linear Embedding (LLE)
-                \item t-Distributed Stochastic Neighbor Embedding (t-SNE)
-            \end{itemize}
-            \item Association rule learning
-            \begin{itemize}
-                \item Apriori
-                \item Eclat
-            \end{itemize}
+            \item Analyzing images of products on a production line to automatically classify them (Convolutional Neural
+            Net)
+            \item Forecasting company revenue based on performance metrics (Regression or Neural Net)
+            \item Automatically classifying news articles (NLP using Recurrent Neural Networks)
+            \item Summarizing long documents automatically (Natural Language Processing)
+            \item Building intelligent bot for a game (Reinforcement Learning)
         \end{itemize}
 
-    \subsubsection{Semisupervised Learning}
-        Labelling can be very time-consuming and costly, often there will be plenty of unlabelled and a few labelled
-        instances. Algorithms that deal with data that is partially labeled is called semi-supervised learning. A good
-        example of this is Google Photos. Google clusters and groups your photos based on facial recognition
-        (unsupervised) and then you can label one photo and it will be able to label every picture like that
-        (supervised). Most semi-supervised learning algorithms are combinations of unsupervised and supervised
-        algorithms.  
-    
-    \subsubsection{Reinforcement Learning}
-        Reinforcement Learning is a learning algorithm based on a reward system. The learning system, called an agent,
-        can observe the environment, select and perform actions, and get rewards in return (or penalties in the form of
-        negative rewards). It will then learn by itself what the best strategy, called a policy, to get the most reward
-        over time. A policy defines what action the agent should choose when it is in a given situation.
+    \subsection{Types of Machine Learning}
+        \subsubsection{Supervised Learning}
+            In supervised learning, the training set you feed to the algorithm includes the desired solutions, called
+            labels. (e.g determining if an email is spam would be trained a dataset of example emails labelled as spam or
+            not spam.) \\[0.1in] 
+            Some commonly used supervised learning algorithms are:
+            \begin{itemize}
+                \item \hyperref[sec:KNN]{k-Nearest Neighbors}
+                \item \hyperref[sec:LinearRegression]{Linear Regression}
+                \item \hyperref[sec:LogisticRegression]{Logistic Regression}
+                \item Support Vector Machines (SVMs)
+                \item Decision Trees and Random Forests
+                \item Neural Networks
+            \end{itemize}
+        
+        \subsubsection{Unsupervised Learning}
+            In unsupervised learning, the training data is unlabeled and the system tries to learn without guidance. The
+            system will try and automatically draw inferences and conclusions about the data and group it as such. (e.g.
+            having a lot of data about blog visitors. Using a clustering algorithm we can group and detect similar
+            visitors). \\[0.1in]
+            Some important unsupervised learning algorithms are:
+            \begin{itemize}
+                \item Clustering
+                \begin{itemize}
+                    \item K-Means
+                    \item DBSCAN
+                    \item Hierarchical Cluster Analysis
+                \end{itemize}
+                \item Anomaly detection and novelty detection
+                \begin{itemize}
+                    \item One-class SVM
+                    \item Isolation Forest
+                \end{itemize}
+                \item Visualization and dimensionality reduction
+                \begin{itemize}
+                    \item Principal Component Analysis (PCA)
+                    \item Kernel PCA
+                    \item Locally Linear Embedding (LLE)
+                    \item t-Distributed Stochastic Neighbor Embedding (t-SNE)
+                \end{itemize}
+                \item Association rule learning
+                \begin{itemize}
+                    \item Apriori
+                    \item Eclat
+                \end{itemize}
+            \end{itemize}
+
+        \subsubsection{Semisupervised Learning}
+            Labelling can be very time-consuming and costly, often there will be plenty of unlabelled and a few labelled
+            instances. Algorithms that deal with data that is partially labeled is called semi-supervised learning. A good
+            example of this is Google Photos. Google clusters and groups your photos based on facial recognition
+            (unsupervised) and then you can label one photo and it will be able to label every picture like that
+            (supervised). Most semi-supervised learning algorithms are combinations of unsupervised and supervised
+            algorithms.  
+        
+        \subsubsection{Reinforcement Learning}
+            Reinforcement Learning is a learning algorithm based on a reward system. The learning system, called an agent,
+            can observe the environment, select and perform actions, and get rewards in return (or penalties in the form of
+            negative rewards). It will then learn by itself what the best strategy, called a policy, to get the most reward
+            over time. A policy defines what action the agent should choose when it is in a given situation.
 
 \section{Data Analysis}
     \subsection{Limitations of Data}
