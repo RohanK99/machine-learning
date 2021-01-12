@@ -16,6 +16,7 @@
 \usepackage{hyperref}
 \usepackage{pgfplots}
 \usepackage{parskip}
+\usepackage[ruled,vlined]{algorithm2e}
 
 \graphicspath{ {./images/} }
 
@@ -225,8 +226,9 @@
             The second solution is to average the rewards. in some problems we don't want to discount earning a reward
             thousands of time steps into the future rather it should have the same reward as earning the utility now. In
             this case we can average the reward. This is computationally more complicated and will not currently be
-            considered in this literature.
+            considered in this literature. 
 
+\section{Dynamic Programming Algorithms for Solving MDPs}
     \subsection{Policy and Policy Optimization}
         A policy is a formal definition for how to select actions. We will denote a policy using $\pi$. We are mapping
         states to actions so we can represent this as $\pi(s_t) = a_t$. The goal in reinforcement learning and markov
@@ -254,56 +256,126 @@
             \item Search techniques
         \end{itemize}
 
-        Computation may be done offline: before the process starts or online: as the process evolves. 
+        Computation may be done offline: before the process starts or online: as the process evolves.
     
-        \subsubsection{Value Iteration}
-            The way this algorithm works is by optimizing / selecting actions in reverse order. To find what the best
-            action at every step we can use dynamic programming that will work backwards and optimize the last decision
-            then the second last decision then so on. 
+    \subsection{Value Iteration}
+        The way this algorithm works is by optimizing / selecting actions in reverse order. To find what the best
+        action at every step we can use dynamic programming that will work backwards and optimize the last decision
+        then the second last decision then so on. 
 
-            We can demonstrate this mathematically as follows:
+        We can demonstrate this mathematically as follows:
+        
+        We start at the last time step $h$.
+        $$ V(s_h) = max_{a_h} R(s_h, a_h) $$
+
+        To optimize the last decision is easy we look at all possible actions and pick the one that yields the
+        highest reward. 
+
+        Value with one time step left:
+        $$ V\left(s_{h-1}\right)=\max _{a_{h-1}} R\left(s_{h-1}, a_{h-1}\right)+\gamma \sum_{s_{h}}
+        P(s_{h} \mid s_{h-1}, a_{h-1}) V\left(s_{h}\right) $$
+
+        Here we are taking into account the reward for the second last time step as well as the last time step and
+        sum the rewards. We have the second last reward $\max _{a_{h-1}} R\left(s_{h-1}, a_{h-1}\right)$ plus the
+        discount factor $\gamma$ multiplied into the expectation $P(s_{h} \mid s_{h-1}, a_{h-1})$ with respect to
+        what the last state will be times the value that I can earn in the last state $V(s_h)$. Now we simply select
+        $a_{h-1}$ to maximize this where $V(s_h)$ is already maximized.
+
+        Similarly value with two time steps left:
+        $$ V\left(s_{h-2}\right)=\max _{a_{h-2}} R\left(s_{h-2}, a_{h-2}\right)+\gamma \sum_{s_{h-1}} P(s_{h-1} \mid
+        s_{h-2}, a_{h-2}) V\left(s_{h-1}\right) $$
+
+        If we do this for the entire planning horizon we can generalize to Bellman's equation:
+        $$ V(s_t) = max_{a_t} R(s_t, a_t) + \gamma \sum_{s_t + 1} P(s_{t+1} \mid s_t, a_t) V(s_t + 1) $$
+
+        Now we can represent the equation to get the optimal action to construct the optimal policy is:
+        $$ a_t^* = argmax_{a_t} R(s_t, a_t) + \gamma \sum_{s_t + 1} P(s_{t+1} \mid s_t, a_t) V(s_t + 1) $$
+
+        \textbf{Finite Horizon}
+            When $h$ is finite we have a non-stationary optimal policy where the best action is different at every
+            time step. The intuition here is that the best action varies with the amount of time left.
+
+        \textbf{Infinite Horizon}
+            When $h$ is infinite, stationary is the optimal policy. We pick the same best action at each time step.
+            The intuition here is that the same amount of time (infinite) at each time step, therefore we pick the
+            same best action. The main problem with this is that value iteration will do an infinite number of
+            iterations. 
+
+            The solution is that we can perform value iteration using a finite $n$ since we are using a discount
+            factor $\gamma$. After $n$ time steps the rewards are scaled down by $\gamma^n$ and for a large enough
+            $n$, the rewards become insignificant since $\gamma^n \rightarrow 0$. For this we need to pick a large
+            enough $n$, run value iteration for $n$ steps and execute policy found at the $n^{th}$ iteration.
+
+        \subsubsection{Algorithm}
+            \begin{algorithm}[H]
+                \SetAlgoLined
+                $V_0^* \gets max_a R(s,a) \forall s$\;
+                \For{$t\gets1$ \KwTo $h$} {
+                    $V_t^*(s) \gets max_a R(s,a) + \gamma \sum_{s'}P(s' | s,a)V_{t-1}^* \forall s$
+                }
+                \Return $V^*$
+                \caption{Value Iteration MDP}
+            \end{algorithm}
+
+            We get the optimal policy $\pi^*$:
+            \begin{itemize}
+                \item $t=0$; $\pi_0^*(s) \gets argmax_a R(s,a) \forall s$
+                \item $t>0$; $\pi_t^*(s) \gets argmax_a R(s,a) + \gamma \sum_{s'}P(s' \mid s, a) V_{t-1}^* (s') \forall s$
+            \end{itemize}
             
-            We start at the last time step $h$.
-            $$ V(s_h) = max_{a_h} R(s_h, a_h) $$
-
-            To optimize the last decision is easy we look at all possible actions and pick the one that yields the
-            highest reward. 
-
-            Value with one time step left:
-            $$ V\left(s_{h-1}\right)=\max _{a_{h-1}} R\left(s_{h-1}, a_{h-1}\right)+\gamma \sum_{s_{h}}
-            P(s_{h} \mid s_{h-1}, a_{h-1}) V\left(s_{h}\right) $$
-
-            Here we are taking into account the reward for the second last time step as well as the last time step and
-            sum the rewards. We have the second last reward $\max _{a_{h-1}} R\left(s_{h-1}, a_{h-1}\right)$ plus the
-            discount factor $\gamma$ multiplied into the expectation $P(s_{h} \mid s_{h-1}, a_{h-1})$ with respect to
-            what the last state will be times the value that I can earn in the last state $V(s_h)$. Now we simply select
-            $a_{h-1}$ to maximize this where $V(s_h)$ is already maximized.
-
-            Similarly value with two time steps left:
-            $$ V\left(s_{h-2}\right)=\max _{a_{h-2}} R\left(s_{h-2}, a_{h-2}\right)+\gamma \sum_{s_{h-1}} P(s_{h-1} \mid
-            s_{h-2}, a_{h-2}) V\left(s_{h-1}\right) $$
-
-            If we do this for the entire planning horizon we can generalize to Bellman's equation:
-            $$ V(s_t) = max_{a_t} R(s_t, a_t) + \gamma \sum_{s_t + 1} P(s_{t+1} \mid s_t, a_t) V(s_t + 1) $$
-
-            Now we can represent the equation to get the optimal action to construct the optimal policy is:
-            $$ a_t^* = argmax_{a_t} R(s_t, a_t) + \gamma \sum_{s_t + 1} P(s_{t+1} \mid s_t, a_t) V(s_t + 1) $$
-
-            \textbf{Finite Horizon}
-                When $h$ is finite we have a non-stationary optimal policy where the best action is different at every
-                time step. The intuition here is that the best action varies with the amount of time left.
-
-            \textbf{Infinite Horizon}
-                When $h$ is infinite, stationary is the optimal policy. We pick the same best action at each time step.
-                The intuition here is that the same amount of time (infinite) at each time step, therefore we pick the
-                same best action. The main problem with this is that value iteration will do an infinite number of
-                iterations. 
-
-                The solution is that we can perform value iteration using a finite $n$ since we are using a discount
-                factor $\gamma$. After $n$ time steps the rewards are scaled down by $\gamma^n$ and for a large enough
-                $n$, the rewards become insignificant since $\gamma^n \rightarrow 0$. For this we need to pick a large
-                enough $n$, run value iteration for $n$ steps and execute policy found at the $n^{th}$ iteration.
+            In this case $t$ indicates the number of time steps to go till the end of process and $\pi^*$ is non
+            stationary. 
             
+            We can express this in matrix form as follows. Let:
+            \begin{itemize}
+                \item $R^a$: $|S| \times 1$ column vector of rewards for $a$.
+                \item $V_t^*$: $|S| \times 1$ column vector of state values.
+                \item $T^a$: $|S| \times |S|$ matrix of transition probabilities for $a$.
+            \end{itemize}
+
+            \begin{algorithm}[H]
+                \SetAlgoLined
+                $V_0^* \gets max_a R^a$\;
+                \For{$t\gets1$ \KwTo $h$} {
+                    $V_t^* \gets max_a R^a + \gamma T^a V_{t-1}^*$
+                }
+                \Return $V^*$
+                \caption{Value Iteration MDP}
+            \end{algorithm}
+
+        \subsection{Policy Evaluation}
+            Policy evaluation computes the value functions for a policy $\pi$. If we consider policy evaluation for an
+            infinite horizon where we let $h \rightarrow \infty$ then $V_h^{\pi} \rightarrow V_{\infty}^{\pi}$ and
+            $V_{h-1}^{\pi} \rightarrow V_{\infty}^{\pi}$
+            
+            Then the equation for policy evaluation becomes:
+            $$V_{\infty}^{\pi}(s)=R\left(s, \pi_{\infty}(s)\right)+\gamma \sum_{s^{\prime}} \operatorname{P}\left(s^{\prime} \mid s, \pi_{\infty}(s)\right) V_{\infty}^{\pi}\left(s^{\prime}\right) \forall s$$
+
+            Bellman's equation:
+            $$V_{\infty}^{*}(s)=\max _{a} R(s, a)+\gamma \sum_{s^{\prime}} \operatorname{P}\left(s^{\prime} \mid s, a\right) V_{\infty}^{*}\left(s^{\prime}\right)$$
+
+            Representing the policy evaluation in matrix form where:
+            \begin{itemize}
+                \item $R$: $|S| \times 1$ column vector of state rewards for $\pi$.
+                \item $V$: $|S| \times 1$ column vector of state rewards for $\pi$.
+                \item $T$: $|S| \times |S|$ column vector of state rewards for $\pi$.
+            \end{itemize}
+
+            then we get:
+            $$ V = R + \gamma TV $$
+
+            To find the value of the policy we solve the system of linear equations. We can do it using the following
+            methods:
+
+            \begin{itemize}
+                \item Gaussian Elimination: $(I - \gamma T)V = R$
+                \item Compute Inverse: $V = (I - \gamma T)^{-1}R$
+                \item Iterative Methods \begin{itemize}
+                    \item Value Iteration (Richardson Iteration)
+                    \item Repeat $V \gets R + \gamma TV$
+                \end{itemize}
+            \end{itemize}
+           
 \printindex
 
 \end{document}
