@@ -343,6 +343,22 @@
                 \caption{Value Iteration MDP}
             \end{algorithm}
 
+            Even when the horizon is infinite we can perform finitely many iterations using the principle of
+            contraction and convergence. We can modify the algorithm to stop when $||V_n - V_{n-1}|| \leq \epsilon$.
+            
+            \begin{algorithm}[H] \label{InfiniteValIterAlgo}
+                \SetAlgoLined
+                $V_0^* \gets max_a R^a$\;
+                $n \gets 0$\;
+                \SetKwRepeat{Do}{do}{while}
+                \Do {
+                    $||V_n - V_{n-1}||_{\infty} \leq \epsilon ||$
+                } {$n \gets n + 1$\;
+                $V_n^* \gets max_a R^a + \gamma T^a V_{n-1}^*$\;}
+                \Return $V^*$
+                \caption{Value Iteration MDP}
+            \end{algorithm}
+
         \subsection{Policy Evaluation}
             Policy evaluation computes the value functions for a policy $\pi$. If we consider policy evaluation for an
             infinite horizon where we let $h \rightarrow \infty$ then $V_h^{\pi} \rightarrow V_{\infty}^{\pi}$ and
@@ -364,7 +380,10 @@
             then we get:
             $$ V = R + \gamma TV $$
 
-            To find the value of the policy we solve the system of linear equations. We can do it using the following
+            If we consider Bellman's equation for a set of non-linear equations then we get:
+            $$ V^* = max_a R^a + \gamma T^a V^* $$
+
+            To find the value of the policy we solve the system. We can do it using the following
             methods:
 
             \begin{itemize}
@@ -375,6 +394,15 @@
                     \item Repeat $V \gets R + \gamma TV$
                 \end{itemize}
             \end{itemize}
+            
+            \subsubsection{Induced Policy}
+                Using the \hyperref[InfiniteValIterAlgo]{infinite value iteration algorithm} for an infinite horizon we
+                can derive the station policy $\pi_n(s)$ based on the computed optimal $V_n$ using:
+
+                $$ \pi_n(s) = argmax_a R(S,a) + \gamma \sum_{s^{\prime}} P(s^{\prime} \mid s, a) V_n(s^{\prime}) $$
+
+                We can further prove that $||V^{\pi_n} - V^*||_{\infty} \leq \frac{2 \epsilon}{1-\gamma}$. That is how
+                far $V^{\pi_n}$ (value of the policy) is from $V^*$. 
            
 \printindex
 
