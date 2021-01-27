@@ -100,6 +100,7 @@
         \end{pmatrix} & \\
         \boldsymbol{w}^T &= (w_1, w_2, ..., w_M) \text{ or } (w_0, w_1, w_2, ..., w_M) \text{ $w_0$ multiplies the first
         entry of $\overline{\boldsymbol{x}}$ (bias)} & \\
+        * &= \text{optimal policy and or function}
     \end{flalign*}
     Note: bold symbols represents a vector
 
@@ -258,7 +259,7 @@
 
         Computation may be done offline: before the process starts or online: as the process evolves.
     
-    \subsection{Value Iteration}
+    \subsection{Value Iteration} \label{sec:ValueIteration}
         The way this algorithm works is by optimizing / selecting actions in reverse order. To find what the best
         action at every step we can use dynamic programming that will work backwards and optimize the last decision
         then the second last decision then so on. 
@@ -359,6 +360,8 @@
                 \caption{Value Iteration MDP}
             \end{algorithm}
 
+            The complexity of the value iteration algorithm is that each iteration is $O(|S|^2|A|)$.
+
         \subsection{Policy Evaluation}
             Policy evaluation computes the value functions for a policy $\pi$. If we consider policy evaluation for an
             infinite horizon where we let $h \rightarrow \infty$ then $V_h^{\pi} \rightarrow V_{\infty}^{\pi}$ and
@@ -403,7 +406,311 @@
 
                 We can further prove that $||V^{\pi_n} - V^*||_{\infty} \leq \frac{2 \epsilon}{1-\gamma}$. That is how
                 far $V^{\pi_n}$ (value of the policy) is from $V^*$. 
-           
+
+    \subsection{Policy Iteration}
+        Instead of doing \hyperref[sec:ValueIteration]{value iteration} where we optimize the value function and extract
+        the induced policy, we can directly optimize the policy using \textbf{policy iteration}. An advantage of policy
+        iteration is that the number of iterations required tends to be small in practice.
+        
+        \subsubsection{Algorithm}
+            The algorithm for policy iteration alternates between 2 steps
+            \begin{enumerate}
+                \item Policy Evaluation
+                $$ V^{\pi}(s) = R(s, \pi(s)) + \gamma \sum_{s^{\prime}} P(s^{\prime} \mid s, \pi(s)) V^{\pi}(s^{\prime})
+                \forall s $$
+                \item Policy Improvement
+                $$ \pi(s) \gets argmax_a R(s,a) + \gamma \sum_{s^{\prime}} P(s^{\prime} \mid s,a) V^{\pi}(s^{\prime})
+                \forall s $$
+            \end{enumerate}
+            
+            \begin{algorithm}[H] \label{PolicyIterationAlgo}
+                \SetAlgoLined
+                Initialize $\pi_0$ to any policy. \;
+                $n \gets 0$ \;
+                \SetKwRepeat{Do}{do}{while}
+                \Do {
+                    $\pi_{n+1} = \pi_n$
+                } {
+                    Eval: $V_n = R^{\pi_n} + \gamma T^{\pi_n} V_n$ \;
+                    Improve: $\pi_{n+1} \gets argmax_a R^a + \gamma T^a V_n$ \;
+                    $n \gets n + 1$
+                }
+                \Return $\pi_n$
+                \caption{Policy Iteration MDP}
+            \end{algorithm}
+
+            The complexity of each iteration in policy iteration is $O(|S|^3 + |S|^2|A|)$, however, it has
+            linear-quadratic convergence which requires fewer iterations than value iteration.
+
+        \subsubsection{Modified Policy Iteration Algorithm}
+            We want to find a modified algorithm that has a complexity similar to that of value iteration and a
+            convergence similar to that of the original policy iteration algorithm. This modified algorithm follows the
+            same principle as policy iteration, however, in order to reduce the cost per iteration it will do a partial
+            policy evaluation. 
+
+            The algorithm for policy iteration alternates between 2 steps
+            \begin{enumerate}
+                \item Partial Policy Evaluation. Repeat $k$ times:
+                $$ V^{\pi}(s) = R(s, \pi(s)) + \gamma \sum_{s^{\prime}} P(s^{\prime} \mid s, \pi(s)) V^{\pi}(s^{\prime})
+                \forall s $$
+                \item Policy Improvement
+                $$ \pi(s) \gets argmax_a R(s,a) + \gamma \sum_{s^{\prime}} P(s^{\prime} \mid s,a) V^{\pi}(s^{\prime})
+                \forall s $$
+            \end{enumerate}
+            
+            \begin{algorithm}[H] \label{ModifiedPolicyIterationAlgo}
+                \SetAlgoLined
+                Initialize $\pi_0$ and $V_0$ to anything. \;
+                $n \gets 0$ \;
+                \SetKwRepeat{Do}{do}{while}
+                \Do {
+                    $||V_n - V_{n-1}||_{\infty} \leq \epsilon$
+                } {
+                    Eval: Repeat $k$ times \;
+                    \Indp $V_n = R^{\pi_n} + \gamma T^{\pi_n} V_n$ \;
+                    \Indm Improve: $\pi_{n+1} \gets argmax_a R^a + \gamma T^a V_n$ \;
+                    \Indp $V_{n+1} \gets max_a R^a + \gamma T^a V_n$ \;
+                    \Indm $n \gets n + 1$ \;
+                }
+                \Return $\pi_n$
+                \caption{Modified Policy Iteration MDP}
+            \end{algorithm}
+
+            The complexity of each iteration is now $O(k|S|^2 + |S|^2|A|)$ which is less than the cost for the original
+            policy iteration and number of iterations for convergence will be linear-quadratic convergence (more
+            iterations than the original policy iteration but less than that of value iteration).
+
+\section{Reinforcement Learning}
+    \subsection{Introduction}
+        We can represent the problem of reinforcement learning as a MDP. We are going to relax the assumption of the
+        reward model from being stationary to being stochastic and modify the goal. If we consider the Reinforcement
+        learning problem the policy decides what action to commit and the transition and reward model determine the
+        state and reward. The main difference is that we don't necessarily know what the state model is, or what rewards
+        the environment uses. So formally we can define reinforcement learning as follows:
+
+        \begin{itemize}
+            \item States: $s \in S$
+            \item Actions: $a \in A$
+            \item Rewards: $r \in \mathbb{R}$
+            \item Transition Model: $P(s_t \mid s_{t-1}, a_{t-1})$ (unknown)
+            \item Reward Model: $P(r_t \mid s_t, a_t)$
+            \item Discount Factor: $0 \leq \gamma \leq 1$
+            \item Horizon: $h$
+        \end{itemize}
+
+        Goal: Find optimal policy $\pi^*$ such that
+        $$ \pi^* = argmax_{\pi} \sum_{t=0}^h \gamma^t E_{\pi}[r_t] $$
+
+        We will now go in depth about algorithms to achieve this policy with the constraints. The idea is to learn
+        an optimal policy while interacting with the environment. The intuition behind this is that we are going to
+        observe the state's actions and rewards at every step and then this gives us samples effectively from the
+        unknown models. When we have a large enough sample there is presumably enough information to recover the model
+        or come up with policy that would be optimal with respect to these unknown models.
+
+    \subsection{RL Agent Architectures}
+        Most agents are a combination of 3 important components.
+        
+        \textbf{Model}: $P(s^{\prime} \mid s, a)$, $P(r \mid s, a)$ -
+        Some agents are going to learn a model explicitly so they are considered model based agents. This involves
+        transition dynamics and reward distribution.
+
+        \textbf{Policy}: $\pi(s)$ -
+        Some agents are also explicitly going to model a policy, so that's the choices that the agents make in different
+        states.
+
+        \textbf{Value Function}: $V(s)$ -
+        Some agents will explicitly write the value function which is simply the expected total sum of the rewards. 
+
+        \subsubsection{Categorizing RL Agents}
+            \begin{itemize}
+                \item \textbf{Value Based}: No policy, value function
+                \item \textbf{Policy Based}: Policy, no value function
+                \item \textbf{Actor Critic}: Policy, value function
+                \item \textbf{Model Based}: Transition and Reward Model
+                \item \textbf{Model Free}: No transition and no reward model
+            \end{itemize}
+    
+    \subsection{Model Free Evaluation}
+        Given a policy $\pi$, estimate $V^{\pi}(s)$ without any transition or reward model.
+
+        \subsubsection{Monte Carlo Evaluation}
+            We know that in theory we can estimate the value at state $s$ by taking the expectation with respect to $\pi$
+            of the discounted sum of the rewards obtained at every time step. Since we don't have the transition and
+            reward model we can instead obtain sample approximations where I can replace the expectation by an average. 
+            \begin{align*}
+            V^{\pi}(s) &= E_{\pi}[\sum_t \gamma^t r_t] \\
+            & \approx \frac{1}{n(s)} \sum^{n(s)}_{k=1} \left[\sum_t \gamma^t r_t^{(k)}\right] 
+            \end{align*}
+
+            \textbf{Algorithm:}
+            
+            Let $G_k$ be a one-trajectory Monte Carlo target (execute the policy once).
+            $$ G_k = \sum_t \gamma^t r_t^{(k)} $$
+
+            Now we want to have a running average, that I can update gradually one sample at a time we can rewrite the
+            approximate value function. This leads to the following incremental update:
+            $$ V_{n}^{\pi}(s) \leftarrow V_{n-1}^{\pi}(s)+\alpha_{n}\left(G_{n}-V_{n-1}^{\pi}(s)\right) $$
+
+            where $\alpha_n$ is the learning rate $\frac{1}{n(s)}$.
+
+        \subsubsection{Temporal Difference Evaluation}
+            For temporal difference evaluation we will consider the equation for policy evaluation where the value of
+            policy $\pi$ is the expected immediate reward plus the discount factor times an expectation with respect to
+            future rewards. Now considering the reinforcement learning problem, we no longer have distributions to
+            compute this expectation. What instead we can do is take a one sample approximation and replace the
+            expectation with one sample approximation for immediate reward and future reward. 
+
+            \begin{align*}
+            V^{\pi}(s) &=E[r \mid s, \pi(s)]+\gamma \sum_{s^{\prime}} \operatorname{P}\left(s^{\prime} \mid s, \pi(s)\right) V^{\pi}\left(s^{\prime}\right) \\
+            & \approx r+\gamma V^{\pi}\left(s^{\prime}\right)
+            \end{align*}
+
+            Using the one sample update we can represent the incremental update as follows:
+            $$ V_{n}^{\pi}(s) \leftarrow V_{n-1}^{\pi}(s)+\alpha_{n}\left(r+\gamma
+            V_{n-1}^{\pi}\left(s^{\prime}\right)-V_{n-1}^{\pi}(s)\right) $$
+
+            Theorem: If $\alpha_{n}$ is appropriately decreased with number of times a state is visited then
+            $V_{n}^{\pi}(s)$ converges to correct value.
+            
+            Sufficient conditions for $\alpha_{n}$
+            \begin{enumerate}
+                \item $\sum_{n} \alpha_{n} \rightarrow \infty$
+                \item $\sum_{n}\left(\alpha_{n}\right)^{2}<\infty$
+            \end{enumerate}
+
+            Often $\alpha_{n}(s)=1 / n(s)$ where $n(s)=\#$ of times $s$ is visited
+
+            \begin{algorithm}[H] \label{TDEval}
+                \SetAlgoLined
+                \SetKwRepeat{Do}{do}{while}
+                \Do {
+                    Until convergence of $V^{\pi}$
+                } {
+                    Execute $\pi(s)$ \;
+                    Observe $s^{\prime}$ and $r$\;
+                    Update Counts: $n(s) \gets n(s) + 1$ \;
+                    Learning Rate: $\alpha \gets 1/n(s)$ \;
+                    Update value: $V_{n}^{\pi}(s) \leftarrow V_{n-1}^{\pi}(s)+\alpha_{n}\left(r+\gamma
+                    V_{n-1}^{\pi}\left(s^{\prime}\right)-V_{n-1}^{\pi}(s)\right)$ \;
+                    $s \gets s^{\prime}$ \;
+                }
+                \Return $V^{\pi}$
+                \caption{TD Evaluation ($\pi, V^{\pi}$)}
+            \end{algorithm}
+
+        Comparing Monte Carlo and Temporal Difference evaluation we see the following:
+
+        Monte Carlo Evaluation:
+        \begin{itemize}
+            \item Unbiased estimate
+            \item High Variance
+            \item Needs many trajectories
+        \end{itemize}
+
+        Temporal Difference Evaluation
+        \begin{itemize}
+            \item Biased estimate
+            \item Lower Variance
+            \item Needs less trajectories
+        \end{itemize}
+    
+    \subsection{Model Free Control}
+        Now we will consider how to update a policy. We still do not know what the model is but we have some samples that
+        will guide us. Instead of evaluating the state value function $V^{\pi}(s)$, evaluate the state-action value
+        function $Q^{\pi}(s, a)$.
+
+        We define $Q^{\pi}(s, a)$ as the value of executing $a$ followed by $\pi$. The difference here is that the value
+        function was the value of just executing the policy at every step but now with the $Q$ function we are going to
+        allow the first action to be different than the one prescribed by policy $\pi$. 
+        $$ Q^{\pi}(s, a) = E[r \mid s, a] + \gamma \sum_{s^{\prime}} P(s^{\prime} \mid s, a) V^{\pi}(s^{\prime}) $$
+        
+        In the $Q$ function, the reward is conditioned on the action and we are going to consider all the possible
+        actions. We do not necessarily take the maximal action or the action prescribed by a policy; we want to consider
+        all possible actions. Now based on the $Q$ function we can compare $Q$ values to find good ways to improve or
+        select actions. 
+
+        Greedy policy $\pi^{\prime}$:
+        $$ \pi^{\prime}(s) = argmax_a Q^{\pi}(s,a) $$
+
+        \subsubsection{Bellman's Equation}
+            For the optimal state-action value function $Q^*(s, a)$ 
+
+            We consider all possible actions $E[r \mid s, a]$ and then follow the optimal policy by taking the
+            expectation with respect to what will be the best in the future (maximizing with respect to $a^{\prime})$.
+
+            $$ Q^*(s, a) = E[r \mid s, a] + \gamma \sum_{s^{\prime}} P(s^{\prime} \mid s, a) max_{a^{\prime}}
+            Q^*(s^{\prime}, a^{\prime}) $$
+        
+        \subsubsection{Monte Carlo Control}
+            Let $G^a_n$ be a one-trajectory Monte Carlo target.
+            $$ G^a_n = r_0^n + \sum_{t=1} \gamma^t r_t^n $$
+
+            where $r_0^n$ is the initial action and $\sum_{t=1} \gamma^t r_t^n$ is the policy $\pi$.
+
+            We can now alternate between:
+
+            Policy evaluation
+            $$ Q_{n}^{\pi}(s, a) \leftarrow Q_{n-1}^{\pi}(s, a)+\alpha_{n}\left(G_{n}^{a}-Q_{n-1}^{\pi}(s, a)\right) $$
+            Policy improvement
+            $$ \pi^{\prime}(s) \leftarrow \operatorname{argmax}_{a} Q^{\pi}(s, a) $$
+
+            The idea here is that we are evaluating our policy by retrieving a new sample at every time step $n$. We
+            compare the sample to the current estimate, take the difference and then make a step that will correct based
+            on that difference with learning rate $\alpha_n$. So each time a new trajectory is obtained a new $G_n^a$ is
+            obtained and this update allows us to gradually evaluate the policy. Now that we have a $Q^{\pi}_n(s,a)$
+            estimate, we know the value of different actions and we can simply change the policy to select the best
+            action using policy improvement.
+
+        \subsubsection{Temporal Difference Control}
+            Temporal Difference control is more efficient and generally used in practice. We can approximate the
+            Q-function with a one sample approximation as follows:
+
+            \begin{align*}
+            Q^{*}(s, a) &=E[r \mid s, a]+\gamma \sum_{s^{\prime}} \operatorname{P}\left(s^{\prime} \mid s, a\right) \max _{a^{\prime}} Q^{*}\left(s^{\prime}, a^{\prime}\right) \\
+            & \approx r+\gamma \max _{a^{\prime}} Q^{*}\left(s^{\prime}, a^{\prime}\right)
+            \end{align*}
+            
+            We will get many samples over time so each time we are going to gradually update the Q function using the
+            following incremental update:
+            $$ Q_{n}^{*}(s, a) \leftarrow Q_{n-1}^{*}(s, a)+\alpha_{n}\left(r+\gamma \max _{a^{\prime}} Q_{n-1}^{*}\left(s^{\prime}, a^{\prime}\right)-Q_{n-1}^{*}(s, a)\right)$$
+        
+        \subsubsection{Q-Learning Algorithm}
+            We can leverage the incremental update concept using in temporal difference control to derive the algorithm
+            for Q-Learning.
+            
+            \begin{algorithm}[H] \label{QLearning}
+                \SetAlgoLined
+                \SetKwRepeat{Do}{do}{while}
+                \Do {
+                    Until convergence of $Q^*$
+                } {
+                    Select and execute $a$ \;
+                    Observe $s^{\prime}$ and $r$\;
+                    Update Counts: $n(s, a) \gets n(s, a) + 1$ \;
+                    Learning Rate: $\alpha \gets 1/n(s,a)$ \;
+                    Update Q value: $Q_{n}^{*}(s, a) \leftarrow Q_{n-1}^{*}(s, a)+\alpha_{n}\left(r+\gamma \max
+                    _{a^{\prime}} Q_{n-1}^{*}\left(s^{\prime}, a^{\prime}\right)-Q_{n-1}^{*}(s, a)\right)$ \;
+                    $s \gets s^{\prime}$ \;
+                }
+                \Return $Q^*$
+                \caption{QLearning($s, Q^*$)}
+            \end{algorithm}
+
+            How do we select $a$?
+            \begin{itemize}
+                \item If an agent always chooses the action with the highest value then it is exploiting. The learned model is not
+                the real model and may lead to suboptimal results. (higher rewards in the short term)
+                \item By taking random actions (pure exploration) an agent may learn the model. 
+            \end{itemize}
+
+            Common Exploration Methods:
+            \begin{itemize}
+                \item $\epsilon$-greedy: With a probability $\epsilon$ execute random action or otherwise execute best action.
+                $$ a^* = argmax_a Q(s,a) $$
+                \item Boltzmann Exploration: probability of choosing any action according to the following formula which
+                tends to prefer actions with high $Q$ values.
+                $$ \operatorname{P}(a)=\frac{e^{\frac{Q(s, a)}{T}}}{\sum_{a} e^{\frac{Q(s, a)}{T}}} $$ 
+            \end{itemize}
 \printindex
 
 \end{document}
