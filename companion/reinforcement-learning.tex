@@ -674,11 +674,11 @@
             following incremental update:
             $$ Q_{n}^{*}(s, a) \leftarrow Q_{n-1}^{*}(s, a)+\alpha_{n}\left(r+\gamma \max _{a^{\prime}} Q_{n-1}^{*}\left(s^{\prime}, a^{\prime}\right)-Q_{n-1}^{*}(s, a)\right)$$
         
-        \subsubsection{Q-Learning Algorithm}
+        \subsubsection{Q-Learning Algorithm} \label{QLearning}
             We can leverage the incremental update concept using in temporal difference control to derive the algorithm
             for Q-Learning.
             
-            \begin{algorithm}[H] \label{QLearning}
+            \begin{algorithm}[H] \label{QLearningAlgo}
                 \SetAlgoLined
                 \SetKwRepeat{Do}{do}{while}
                 \Do {
@@ -711,6 +711,130 @@
                 tends to prefer actions with high $Q$ values.
                 $$ \operatorname{P}(a)=\frac{e^{\frac{Q(s, a)}{T}}}{\sum_{a} e^{\frac{Q(s, a)}{T}}} $$ 
             \end{itemize}
+
+\section{Deep Q Networks}
+    The objective of Deep Q Networks is to estimate the $Q$ function using a neural network. We have seen that we can
+    train a neural network using gradient descent. So the objective for a deep $Q$ network is to train the
+    \hyperref[QLearning]{Q Learning} algorithm using gradient descent for linear and non-linear objectives.
+    
+    \subsection{Gradient Q-Learning}
+        We have seen the following:
+        \begin{itemize}
+            \item Q-value estimate: $Q_{\boldsymbol{w}}(s,a)$ 
+            \item Target: $r + \gamma \; max_{a^{\prime}} Q_{\boldsymbol{\bar{w}}}(s^{\prime}, a^{\prime})$
+        \end{itemize}
+
+        We want to minimize the squared error between the Q-value estimate and target. We use the squared error function
+        as our loss function that we want to minimize where we vary $\boldsymbol{w}$ to minimize our error and
+        $\bar{\boldsymbol{w}}$ remains fixed.
+
+        Squared Error:
+        $$ Err(\boldsymbol{w}) = \frac{1}{2}[Q_{\boldsymbol{w}}(s,a) - r - \gamma \; max_{a^{\prime}}
+        Q_{\boldsymbol{\bar{w}}}(s^{\prime}, a^{\prime})]^2 $$
+
+        Gradient
+        $$ \frac{\partial Err}{\partial \boldsymbol{w}}=\left[Q_{\boldsymbol{w}}(s, a)-r-\gamma \max _{a^{\prime}}
+        Q_{\bar{\boldsymbol{w}}}\left(s^{\prime}, a^{\prime}\right)\right] \frac{\partial Q_{\boldsymbol{w}}(s,
+        a)}{\partial \boldsymbol{w}} $$
+
+        The gradient is intuitively the gradient of the $Q$ function times the temporal difference.
+
+        \subsubsection{Gradient Q-Learning Algorithm}
+            \begin{algorithm}[H] \label{GradientQLearningAlgo}
+                \SetAlgoLined
+                \SetKwRepeat{Do}{do}{while}
+                Initialize weights $\boldsymbol{w}$ uniformly at random in $[-1,1]$
+                Observe current state $s$.
+                \Do {
+                    Until number of epochs
+                } {
+                    Select and execute action $a$ \;
+                    Receive immediate reward $r$ \;
+                    Observer new state $s^{\prime}$ \;
+                    Gradient: $\frac{\partial Err}{\partial \boldsymbol{w}}=\left[Q_{\boldsymbol{w}}(s, a)-r-\gamma \max _{a^{\prime}}
+                    Q_{\boldsymbol{w}}\left(s^{\prime}, a^{\prime}\right)\right] \frac{\partial Q_{\boldsymbol{w}}(s,
+                    a)}{\partial \boldsymbol{w}}$ \;
+                    Update weights: $\boldsymbol{w} \gets \boldsymbol{w} - \alpha \frac{\partial Err}{\partial
+                    \boldsymbol{w}}$
+                    Update state: $ s \gets s^{\prime} $
+                }
+                \caption{Gradient QLearning($s$)}
+            \end{algorithm}
+            
+
+            In this case we notice that the target value does not have fixed weights. This can lead to variable
+            divergence. If we consider linear gradient $Q$ learning where $Q_{\boldsymbol{w}}(s,a) = \sum_i w_i x_i$
+            then the $Q$ learning algorithm converges under the conditions of $\sum_{t=0}^{\infty} \alpha_t = \infty$
+            and $\sum_{t=0}^{\infty} \alpha_t^2 < \infty$. However, under these conditions a non-linear gradient $Q$
+            learning algorithm may diverge. This is because we haven't fixed $\boldsymbol{w}$ for the target. We are
+            effectively changing the target and the estimate.
+        
+        \subsubsection{Mitigating Divergence}
+            To mitigate the divergence issue discussed in the gradient $Q$ learning algorithm we can use 2 tricks. 
+
+            \begin{enumerate}
+                \item Experience Replay
+                \item Use 2 networks: \begin{itemize}
+                    \item Q-Network
+                    \item Target Network
+                \end{itemize}
+            \end{enumerate}
+
+            \textbf{Experience Replay}: The idea is to store previous experiences ($s, a, s^{\prime}, r$) into a buffer
+            and sample a mini-batch of previous experiences at each step to learn by $Q$-learning. The intuition behind
+            this is that if we introduce some errors elsewhere, a simple way of correcting this is to remember all of
+            our previous tuples and fixing the errors by replaying this experience and performing further updates. 
+            
+            The advantages of this are:
+            \begin{itemize}
+                \item Break correlations between successive updates (more stable learning)
+                \item Fewer interactions with environment needed to converge (greater data efficiency)
+            \end{itemize}
+
+            \textbf{Target Network}: The idea is the use a separate target network that is updated only periodically.
+            We are going to update our estimate network while keeping the target network fixed and then once in a while
+            we are going to update the target network in the direction of the estimation network.
+
+            Repeat for each ($s, a, s^{\prime}, r$) in mini-batch (similar to value iteration):
+            \begin{align*}
+                \boldsymbol{w} & \leftarrow \boldsymbol{w}-\alpha_{t}\left[Q_{\boldsymbol{w}}(s, a)-r-\gamma \max
+                _{a^{\prime}} Q_{\bar{w}}\left(s^{\prime}, a^{\prime}\right)\right] \frac{\partial Q_{\boldsymbol{w}}(s,
+                a)}{\partial \boldsymbol{w}} \\
+                \bar{\boldsymbol{w}} & \gets \boldsymbol{w}
+            \end{align*}
+
+        \subsection{Deep Q-Network Algorithm}
+            This algorithm is similar to the \hyperref[GradientQLearningAlgo]{Gradient $Q$ Learning Algo} but no
+            incorporates Experience Relay and Target Networks to mitigate the chance of divergence. 
+            
+            \begin{algorithm}[H] \label{DeepQLearning}
+                \SetAlgoLined
+                \SetKwRepeat{Do}{do}{while}
+                Initialize weights $\boldsymbol{w}$ uniformly at random in $[-1,1]$
+                Observe current state $s$.
+                \Do {
+                    Until number of epochs
+                } {
+                    Select and execute action $a$ \;
+                    Receive immediate reward $r$ \;
+                    Observer new state $s^{\prime}$ \;
+                    Add ($s, a, s^{\prime}, r$) to experience buffer \;
+                    Sample mini-batch to experiences from buffer \;
+                    For each experience ($\hat{s}, \hat{a}, \hat{s}^{\prime}, \hat{r}$) \;
+                        \Indp
+                        Gradient: $\frac{\partial Err}{\partial \boldsymbol{w}}=\left[Q_{\boldsymbol{w}}(\hat{s}, \hat{a})-\hat{r}-\gamma \max _{\hat{a}^{\prime}}
+                        Q_{\bar{\boldsymbol{w}}}\left(\hat{s}^{\prime}, \hat{a}^{\prime}\right)\right] \frac{\partial Q_{\boldsymbol{w}}(\hat{s},
+                        \hat{a})}{\partial \boldsymbol{w}}$ \;
+                        Update weights: $\boldsymbol{w} \gets \boldsymbol{w} - \alpha \frac{\partial Err}{\partial
+                        \boldsymbol{w}}$ \;
+                        \Indm
+                    Update state: $ s \gets s^{\prime} $
+                    Every $c$ steps, update target: $\bar{\boldsymbol{w}} \gets \boldsymbol{w}$
+                }
+                \caption{Gradient QLearning($s$)}
+            \end{algorithm}
+            
+
 \printindex
 
 \end{document}
