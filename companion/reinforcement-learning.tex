@@ -806,7 +806,7 @@
         \subsection{Deep Q-Network Algorithm}
             This algorithm is similar to the \hyperref[GradientQLearningAlgo]{Gradient $Q$ Learning Algo} but no
             incorporates Experience Relay and Target Networks to mitigate the chance of divergence. 
-            
+
             \begin{algorithm}[H] \label{DeepQLearning}
                 \SetAlgoLined
                 \SetKwRepeat{Do}{do}{while}
@@ -833,7 +833,91 @@
                 }
                 \caption{Gradient QLearning($s$)}
             \end{algorithm}
-            
+    
+\section{Policy Gradient Methods}
+    Policy gradient is a model-free policy-based method, where no explicit value function representation.
+
+    \subsection{Stochastic Policy}
+        When we want to consider the gradient of a policy we want to consider a continuous function (e.g. a stochastic
+        policy) since it is a continuous probability between 0 and 1. We can consider the stochastic policy
+        $\pi_{\theta}(a \mid s) = P(a \mid s, \theta)$ parametrized by $\theta$.
+
+        If we have finitely many discrete actions then we ca represent the policy as the softmax function:
+        $$ \pi_{\theta}(a \mid s) = \frac{exp(h(s,a; \theta))}{\sum_{a^{\prime}} exp(h(s,a^{\prime}; \theta))} $$
+
+        Where $h(s,a;\theta)$ might be linear in $\theta$ or non-linear in $\theta$. 
+        
+        If we have continuos actions then we can represent it with a Gaussian. We don't have to make the stochastic
+        policy continuos if we want to consider continuous functions.
+
+        $$ \pi_{\theta}(a \mid s) = N(a \mid \mu(s;\theta), \sum(s;\theta)) $$
+
+    \subsection{RL Approach}
+        Now to generate the Reinforcement Learning Algorithm, we consider a stochastic policy $\pi_{\theta}(a \mid s)$.
+        We have data in state-action-reward triples as $\{(s_1, a_1, r_1), (s_2, a_2, r_2), ... \}$.
+
+        We want to maximize the discounted sum of rewards
+        $$ \theta^* = argmax_{\theta} \sum_n \gamma^n E_{\theta}[r_n \mid s_n, a_n] $$
+
+        Taking the derivative of this we get the gradient update:
+        $$ \theta_{n+1} \gets \theta_n + \alpha_n \gamma^n G_n \nabla_{\theta} log \pi_{\theta}(a_n \mid s_n) $$
+        where $G_n = \sum_{t=0}^{\infty} \gamma^t r_{n+t}$
+
+        This can be derived using the stochastic gradient policy theorem. Which shows:
+        $$ \nabla V_{\theta} \approx \gamma^n G_n \nabla log \pi_{\theta} (a_n | s_n) $$
+
+        \subsubsection{Algorithm}
+            \begin{algorithm}[H] \label{REINFORCE}
+            \SetAlgoLined
+            \SetKwRepeat{Do}{do}{while}
+            Initialize $\pi_{\theta}$ to anything \;
+            \Do {
+                forever (for each episode)
+            } {
+                Generate episode $s_0, a_0, r_0, s_1, a_1, r_1, ..., s_T, a_T, r_T$ with $\pi_{\theta}$ \;
+                \Do{
+                    For each step of the episode $n = 0, 1, ... T$
+                } {
+                    $G_n \gets \sum_{t=0}^{T-n} \gamma^t r_{n+t}$ \;
+                    Update policy: $\theta \gets \theta + \alpha \gamma^n G_n \nabla log \pi_{\theta}(a_n \mid s_n)$ \;
+                }
+            }
+            Return $\pi(\theta)$ \;
+            \caption{REINFORCE($s_0, \pi_{\theta}$)}
+        \end{algorithm}
+
+    \subsection{Policy Network}
+        A policy network is essentially a neural network that encodes a policy that would indicate with what probability
+        an action is selected given an environment configuration. The input being the state $s$ and the output being a
+        distribution over the actions $a$. 
+
+        \subsubsection{Training}
+            Let $G_n = \sum_t \gamma^t r_{n+t}$ be the discounted sum of rewards in trajectory that starts in $s$ at
+            time $n$ by executing $a$. 
+
+            Gradient: 
+            $$\nabla \theta = \frac{\partial{log \pi_{\theta}(a \mid s)}}{\partial \theta} \gamma^n G_n$$
+
+            The intuition is that we are rescaling the supervised learning gradient by $G_n$.
+
+            Policy Update:
+            $$ \theta \gets \theta + \alpha \nabla \theta $$
+
+    \subsection{Value Network}
+        The value network would predict $V(s^{\prime})$ which would indicate who will win each game in each state
+        $s^{\prime}$. It would take in an input state $s$ and output the expected sum of rewards $V(s^{\prime})$.
+        
+        \subsubsection{Training}
+            Let $\boldsymbol{w}$ be the weights of the value network
+
+            Then we have the data $(s, G)$ where $G$ can be something like [-1, 1] for loss and win respectively.
+
+            Objective: minimize $\frac{1}{2} (V_{\boldsymbol{w}}(s) - G)^2$ \\
+            Gradient: $\nabla \boldsymbol{w} = \frac{\partial V_{\boldsymbol{w}}(s)}{\partial \boldsymbol{w}}
+            (V_{\boldsymbol{w}}(s) - G)$ \\
+            Weight Update: $\boldsymbol{w} \gets \boldsymbol{w} - \alpha \nabla \boldsymbol{w}$
+
+    We can combine the policy and value networks into a monte carlo tree search algorithm. 
 
 \printindex
 
